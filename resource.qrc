@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="img">
+    <file alias="warning">graphics/baseline_warning_white_36dp.png</file>
+    <file alias="warningYellow">graphics/baseline_warning_yellow_36dp.png</file>
+    <file alias="shutdownRed">graphics/baseline_power_settings_new_red_36dp.png</file>
+    <file alias="shutdown">graphics/baseline_power_settings_new_white_36dp.png</file>
+    <file alias="leftArrow">graphics/leftArrow.png</file>
+    <file alias="leftArrowOn">graphics/leftArrowOn.png</file>
+    <file alias="rightArrow">graphics/rightArrow.png</file>
+    <file alias="rightArrowOn">graphics/rightArrowOn.png</file>
+    <file alias="logo">graphics/SolarCarLogo.png</file>
+  </qresource>
+</RCC>
