@@ -230,6 +230,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.logDict[timestamp]['AverageBatteryTemperature'] = self.avgBatteryTemperature
             self.logDict[timestamp]['StateOfCharge'] = self.stateOfCharge
             self.logDict[timestamp]['MilesRange'] = self.milesRange
+            self.logDict[timestamp]['Current'] = self.current
             self.logDict[timestamp]['AveragePackCurrent'] = self.avgPackCurrent
             self.logDict[timestamp]['HighestBatteryTemperature'] = self.highestTemperature
             self.logDict[timestamp]['ThermistorID'] = self.highestTemperatureThermistorID
