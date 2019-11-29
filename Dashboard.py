@@ -1,11 +1,13 @@
 # Changelog
 # 11/26/2019 Changelog
 # Updated variables related to BMS
+
 # 10/20/2019 Changelog
 # Added shutdown button and warning telltale
 
 # 10/1/2019 Changelog
 # Added initial widgets
+
 import json
 import sys
 import traceback
@@ -26,7 +28,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.CAN = CAN_Control()
 
         self.startTime = datetime.now()
-        self.logFilePath = '\\home\\pi\\Documents\\Logs\\{}.json'.format(self.startTime.__str__())
+        self.logFilePath = '//home//pi//Documents//Logs//{}.json'.format(self.startTime.__str__())
 
         self.logDict = OrderedDict()
 
@@ -66,33 +68,43 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.saveLogJsonTimer.timeout.connect(self.saveLogJson)
         self.saveLogJsonTimer.start(300000)
 
+        # pointer for read thread
+        self.ReadThread = None
+        self.readThread()
+
+
     def readThread(self):
         """Thread for reading and deciphering incoming CAN messages"""
         class ReadThread(QThread):
+            updateStatusBMS_Signal = pyqtSignal()
+            batteryUpdateGUI_Signal = pyqtSignal()
 
             def __init__(self):
                 QThread.__init__(self)
 
             def run(self):
                 while True:
-                    ID, data = self.CAN.read()
-                    if ID is not None and data is not None:
-                        if ID == 0x001 or ID == 0x002:
-                        # incoming message from BMS
+                    try:
+                        ID, data = self.CAN.readMessage()
+                        print(data)
+                        if ID is not None and data is not None:
                             if ID == 0x001:
                                 self.BMS.decodeMessage1(data)
-                            else:
+                                self.updateStatusBMS_Signal.emit()
+                                self.batteryUpdateGUI_Signal.emit()
+                            elif ID == 0x002:
                                 self.BMS.decodeMessage2(data)
-                            self.updateStatusBMS.emit()
-                            self.batteryUpdateSignal.emit()
+                                self.updateStatusBMS_Signal.emit()
+                                self.batteryUpdateGUI_Signal.emit()
+                    except:
+                        print(traceback.format_exc())
         try:
-            self.readThread = ReadThread()
-            myThread = self.readThread
-            myThread.CAN = self.CAN
-            myThread.BMS = self.CAN.BMS
-            myThread.updateStatusBMS_Signal.connect(self.updateStatusBMS)
-            myThread.batteryUpdateSignal.connect(self.batteryUpdate)
-
+            self.ReadThread = ReadThread()
+            self.ReadThread.CAN = self.CAN
+            self.ReadThread.BMS = self.CAN.BMS
+            self.ReadThread.updateStatusBMS_Signal.connect(self.updateStatusBMS)
+            self.ReadThread.batteryUpdateGUI_Signal.connect(self.batteryUpdateGUI)
+            self.ReadThread.start()
         except:
             print(traceback.format_exc())
 
@@ -119,14 +131,12 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                 QThread.__init__(self)
 
             def run(self):
-                # update battery variables
-
                 # update the GUI battery status
-                self.chargePercentageBar.setValue(str(self.stateOfCharge))
-                self.milesText.setText(str(self.miles))
+                self.chargePercentageBar.setValue(int(self.stateOfCharge))
+                self.milesText.setText(str(self.milesRange))
                 self.voltageText.setText(str(self.voltage))
-                self.batteryTemperatureText.setText(str(self.batteryTemperature))
-
+                self.batteryTemperatureText.setText(str(self.avgBatteryTemperature))
+                
         try:
             self.batteryUpdateGUIThread = BatteryUpdateGUIThread()
             myThread = self.batteryUpdateGUIThread
@@ -168,20 +178,14 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         except:
             print(traceback.format_exc())
 
-    def leftTurnSignal(self):
-        """Check to see if left blinker was activated"""
-
-    def rightTurnSignal(self):
-        """Check to see if right blinker was activated"""
-
     def shutdown(self):
         """Shutdown the rpi when shutdown button is pressed. Save the log prior to shut down"""
         try:
             self.appendLogDictTimer.stop()
             self.saveLogJsonTimer.stop()
-            self.saveLogDict()
+            self.saveLogJson()
             self.endLogFile()
-            call('sudo shutdown now', shell=True)
+##            call('sudo shutdown now', shell=True)
         except:
             print(traceback.format_exc())
 
@@ -189,7 +193,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         """Initialize the log file and write the starting time as the file header"""
         try:
             with open(self.logFilePath, 'w') as f:
-                header = 'Starting time: {}'.format(self.startTime.__str__)
+                header = 'Starting time: {}'.format(self.startTime.__str__())
                 f.write(header)
                 f.close()
         except:
@@ -211,9 +215,9 @@ class Dashboard(QMainWindow, Ui_MainWindow):
     def endLogFile(self):
         """End the log file by marking an ending time stamp"""
         try:
-            with open(self.logFilePath, 'w') as f:
+            with open(self.logFilePath, 'a') as f:
                 self.endTime = datetime.now()
-                header = 'Ending time: {}'.format(self.endTime.__str__)
+                header = 'Ending time: {}'.format(self.endTime.__str__())
                 f.write(header)
                 f.close()
         except:
