@@ -58,7 +58,7 @@
      <rect>
       <x>560</x>
       <y>140</y>
-      <width>201</width>
+      <width>219</width>
       <height>191</height>
      </rect>
     </property>
@@ -163,9 +163,12 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>15</width>
            <height>20</height>
           </size>
          </property>
@@ -222,9 +225,12 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>28</width>
+           <width>15</width>
            <height>37</height>
           </size>
          </property>
@@ -285,9 +291,12 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>15</width>
            <height>20</height>
           </size>
          </property>
