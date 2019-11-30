@@ -22,46 +22,56 @@ from subprocess import call
 from collections import OrderedDict
 from CAN import *
 
-ReadThreadPointer = None
 
 class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
 
+        # initialize CAN_Control, BMS, MCU 
+        self.CAN = CAN_Control()
+        self.BMS = self.CAN.BMS
+        self.MCU = self.CAN.MCU
+
+        # connect shutdown button
         self.shutdownButton.pressed.connect(self.shutdown)
         
         self.startTime = datetime.now()
         self.logFilePath = '//home//pi//Documents//Logs//{}.json'.format(self.startTime.__str__())
         self.logDict = OrderedDict()
 
+        # start read thread
+        self.readThread = None
+        self.startReadThread()
+
         # initialize log file
         self.initLogFile()
 
         # append to the logDict every minute
+        self.appendLogDictThread = None
         self.appendLogDictTimer = QTimer()
         self.appendLogDictTimer.setSingleShot(False)
         self.appendLogDictTimer.timeout.connect(self.appendLogDict)
         self.appendLogDictTimer.start(60000)
 
         # save json file every 5 minutes
+        self.saveLogJsonThread = None
         self.saveLogJsonTimer = QTimer()
         self.saveLogJsonTimer.setSingleShot(False)
         self.saveLogJsonTimer.timeout.connect(self.saveLogJson)
         self.saveLogJsonTimer.start(300000)
 
         # update the GUI display every 250 ms
+        self.updateGUI_Thread = None
         self.updateGUI_Timer = QTimer()
         self.updateGUI_Timer.setSingleShot(False)
         self.updateGUI_Timer.timeout.connect(self.updateGUI)
         self.updateGUI_Timer.start(250)
 
-    def readThread(self):
+    def startReadThread(self):
         """Thread for reading and deciphering incoming CAN messages"""
         class ReadThread(QThread):
-            updateStatusBMS_Signal = pyqtSignal()
-            batteryUpdateGUI_Signal = pyqtSignal()
-
+            
             def __init__(self):
                 QThread.__init__(self)
 
@@ -79,12 +89,11 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     except:
                         print(traceback.format_exc())
         try:
-            global ReadThreadPointer
-            ReadThreadPointer = ReadThread()
-            ReadThreadPointer.CAN = self.CAN
-            ReadThreadPointer.BMS = self.CAN.BMS
-            ReadThreadPointer.MCU = self.CAN.MCU
-            ReadThreadPointer.start()
+            self.readThread = ReadThread()
+            self.readThread.CAN = self.CAN
+            self.readThread.BMS = self.BMS
+            self.readThread.MCU = self.MCU
+            self.readThread.start()
         except:
             print(traceback.format_exc())
 
@@ -111,9 +120,9 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     ###### update GUI display based on new signal variables #####
                     # BMS
                     self.chargePercentageBar.setValue(int(stateOfCharge))
-                    self.milesText.setText('{} mi'.format(0))
-                    self.voltageText.setText('{} V'.format(voltage))
-                    self.batteryTemperatureText.setText('{} C'.format(avgBatteryTemperature))
+                    self.milesText.setText(str(0))
+                    self.voltageText.setText(str(voltage))
+                    self.batteryTemperatureText.setText(str(avgBatteryTemperature))
 
                     # MCU
                     self.speedometer.display(speed)
@@ -123,19 +132,18 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             
                 
         try:
-
-            updateGUI_Thread = UpdateGUI()
-            updateGUI_Thread.BMS = self.CAN.BMS
-            updateGUI_Thread.MCU = self.CAN.MCU
+            self.updateGUI_Thread = UpdateGUI()
+            self.updateGUI_Thread.BMS = self.BMS
+            self.updateGUI_Thread.MCU = self.MCU
 
             # GUI widgets
-            updateGUI_Thread.chargePercentageBar = self.chargePercentageBar
-            updateGUI_Thread.milesText = self.milesText
-            updateGUI_Thread.voltageText = self.voltageText
-            updateGUI_Thread.batteryTemperatureText = self.batteryTemperatureText
-            updateGUI_Thread.speedometer = self.speedometer
+            self.updateGUI_Thread.chargePercentageBar = self.chargePercentageBar
+            self.updateGUI_Thread.milesText = self.milesText
+            self.updateGUI_Thread.voltageText = self.voltageText
+            self.updateGUI_Thread.batteryTemperatureText = self.batteryTemperatureText
+            self.updateGUI_Thread.speedometer = self.speedometer
 
-            updateGUI_Thread.start()
+            self.updateGUI_Thread.start()
         except:
             print(traceback.format_exc())
 
@@ -145,7 +153,9 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.appendLogDictTimer.stop()
             self.saveLogJsonTimer.stop()
             self.appendLogDict()
+            self.appendLogDictThread.wait()
             self.saveLogJson()
+            self.saveLogJsonThread.wait()
             self.endLogFile()
             
 ##            call('sudo shutdown now', shell=True)
@@ -181,19 +191,10 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     print(traceback.format_exc())
 
         try:
-            myThread = SaveLogJson()
-            myThread.logFilePath = self.logFilePath
-            myThread.logDict = self.logDict
-            myThread.start()
-            """
-            with open(self.logFilePath, 'a') as f:
-                logJson = json.dumps(self.logDict, sort_keys=True, indent=4)
-                f.write(logJson)
-                f.close()
-            self.logDict.clear()
-        except FileNotFoundError as err:
-            print(str(err))
-            """
+            self.saveLogJsonThread = SaveLogJson()
+            self.saveLogJsonThread.logFilePath = self.logFilePath
+            self.saveLogJsonThread.logDict = self.logDict
+            self.saveLogJsonThread.start()
         except:
             print(traceback.format_exc())
 
@@ -217,62 +218,41 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
             def run(self):
                 try:
-                    self.logDict[self.timestamp] = {}
-                    self.logDict[self.timestamp]['Voltage'] = BMS.getVoltage()
-                    self.logDict[self.timestamp]['AverageBatteryTemperature'] = BMS.getAvgBatteryTemp()
-                    self.logDict[self.timestamp]['StateOfCharge'] = BMS.getSOC()
-                    self.logDict[self.timestamp]['MilesRange'] = 0
-                    self.logDict[self.timestamp]['Current'] = BMS.getCurrent()
-                    self.logDict[self.timestamp]['AveragePackCurrent'] = BMS.getAvgPackCurrent()
-                    self.logDict[self.timestamp]['HighestBatteryTemperature'] = BMS.getHighestTemp()
-                    self.logDict[self.timestamp]['ThermistorID'] = BMS.getHighetTempThermistorID()
-                    self.logDict[self.timestamp]['Speed'] = MCU.getSpeed()
+                    BMS = self.BMS
+                    MCU = self.MCU
+                    logDict = self.logDict
+                    t = self.timestamp
+                    logDict[t] = {}
+                    logDict[t]['Voltage'] = '{} V'.format(BMS.getVoltage())
+                    logDict[t]['AverageBatteryTemperature'] = '{} F'.format(BMS.getAvgBatteryTemp())
+                    logDict[t]['StateOfCharge'] = '{} %'.format(BMS.getSOC())
+                    logDict[t]['MilesRange'] = '{} mi'.format(0)
+                    logDict[t]['Current'] = '{} A'.format(BMS.getCurrent())
+                    logDict[t]['AveragePackCurrent'] = '{} A'.format(BMS.getAvgPackCurrent())
+                    logDict[t]['HighestBatteryTemperature'] = '{} F'.format(BMS.getHighestTemp())
+                    logDict[t]['ThermistorID'] = BMS.getHighetTempThermistorID()
+                    logDict[t]['Speed'] = '{} mph'.format(MCU.getSpeed())
                 except KeyError as err:
                     print(str(err))
                 except:
                     print(traceback.format_exc())
 
         try:
-            myThread = AppendLogDict()
-            myThread.BMS = self.CAN.BMS
-            myThread.MCU = self.CAN.MCU
-            myThread.timestamp = datetime.now().__str__()
-            myThread.logDict = self.logDict
-            myThread.start()
+            self.appendLogDictThread  = AppendLogDict()
+            self.appendLogDictThread.BMS = self.BMS
+            self.appendLogDictThread.MCU = self.MCU
+            self.appendLogDictThread.timestamp = datetime.now().__str__()
+            self.appendLogDictThread.logDict = self.logDict
+            self.appendLogDictThread.start()
 
-            """
-            BMS = self.CAN.BMS
-            timestamp = datetime.now().__str__()
-            self.logDict[timestamp] = {}
-
-            # battery information
-            self.logDict[timestamp]['Voltage'] = BMS.getVoltage()
-            self.logDict[timestamp]['AverageBatteryTemperature'] = BMS.getAvgBatteryTemp()
-            self.logDict[timestamp]['StateOfCharge'] = BMS.getSOC()
-            self.logDict[timestamp]['MilesRange'] = 0
-            self.logDict[timestamp]['Current'] = BMS.getCurrent()
-            self.logDict[timestamp]['AveragePackCurrent'] = BMS.getAvgPackCurrent()
-            self.logDict[timestamp]['HighestBatteryTemperature'] = BMS.getHighestTemp() 
-            self.logDict[timestamp]['ThermistorID'] = BMS.getHighetTempThermistorID()
-            
-        except KeyError as err:
-            print(str(err))
-            pass
-            """
         except:
             print(traceback.format_exc())
 
 def main():
     try:
         app = QApplication(sys.argv)
-        app.setStyle("fusion")
         form = Dashboard()
         form.show()
-
-        # create object for CAN_Control and start reading from CAN-bus
-        form.CAN = CAN_Control()
-        form.readThread()
-
     except:
         print(traceback.format_exc())
     finally:
