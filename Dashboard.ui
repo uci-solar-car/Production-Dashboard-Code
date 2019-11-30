@@ -71,7 +71,16 @@
        <item>
         <widget class="QProgressBar" name="chargePercentageBar">
          <property name="styleSheet">
-          <string notr="true">color: white;</string>
+          <string notr="true"> QProgressBar::chunk {
+     background-color: #3add36;
+     width: 1px;
+ }
+
+ QProgressBar {
+     border: 2px solid grey;
+     border-radius: 0px;
+     text-align: center;
+ }</string>
          </property>
          <property name="value">
           <number>90</number>
@@ -148,7 +157,7 @@
           <string notr="true">color: rgb(255,255,255)</string>
          </property>
          <property name="text">
-          <string>96 V</string>
+          <string>0 V</string>
          </property>
         </widget>
        </item>
@@ -197,7 +206,7 @@
           <string notr="true">color: rgb(255,255,255)</string>
          </property>
          <property name="text">
-          <string>120 C</string>
+          <string>0 C</string>
          </property>
         </widget>
        </item>
@@ -250,7 +259,7 @@
           <string notr="true">color: white</string>
          </property>
          <property name="text">
-          <string>200 mi</string>
+          <string>0 mi</string>
          </property>
         </widget>
        </item>

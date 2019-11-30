@@ -40,7 +40,16 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.chargePercentageBar = QtWidgets.QProgressBar(self.verticalLayoutWidget)
-        self.chargePercentageBar.setStyleSheet("color: white;")
+        self.chargePercentageBar.setStyleSheet(" QProgressBar::chunk {\n"
+"     background-color: #3add36;\n"
+"     width: 1px;\n"
+" }\n"
+"\n"
+" QProgressBar {\n"
+"     border: 2px solid grey;\n"
+"     border-radius: 0px;\n"
+"     text-align: center;\n"
+" }")
         self.chargePercentageBar.setProperty("value", 90)
         self.chargePercentageBar.setInvertedAppearance(False)
         self.chargePercentageBar.setObjectName("chargePercentageBar")
@@ -192,11 +201,11 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.logo.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><img src=\":/img/logo\"width=\"220\" height=\"190\"/></p></body></html>"))
         self.voltageLabel.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ffffff;\">Voltage:</span></p></body></html>"))
-        self.voltageText.setText(_translate("MainWindow", "96 V"))
+        self.voltageText.setText(_translate("MainWindow", "0 V"))
         self.batteryTemperatureLabel.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#ffffff;\">Battery temp:</span></p></body></html>"))
-        self.batteryTemperatureText.setText(_translate("MainWindow", "120 C"))
+        self.batteryTemperatureText.setText(_translate("MainWindow", "0 C"))
         self.milesLabel.setText(_translate("MainWindow", "<html><head/><body><p>Miles range:</p></body></html>"))
-        self.milesText.setText(_translate("MainWindow", "200 mi"))
+        self.milesText.setText(_translate("MainWindow", "0 mi"))
         self.pLabel.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:16pt; color:#ffffff;\">P</span></p></body></html>"))
         self.rLabel.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:16pt; color:#ffffff;\">R</span></p></body></html>"))
         self.nLabel.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:16pt; color:#ffffff;\">N</span></p></body></html>"))
