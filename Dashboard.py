@@ -19,59 +19,39 @@ from subprocess import call
 from collections import OrderedDict
 from CAN import *
 
+ReadThreadPointer = None
+
 class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
 
-        # initialize CAN object and start reading thread
-        self.CAN = CAN_Control()
-
+        self.shutdownButton.pressed.connect(self.shutdown)
+        
         self.startTime = datetime.now()
         self.logFilePath = '//home//pi//Documents//Logs//{}.json'.format(self.startTime.__str__())
-
         self.logDict = OrderedDict()
-
-        ### battery management system signals ###
-        # visible on dashboard
-        self.voltage = 0    # instantaneous voltage of the battery pack
-        self.avgBatteryTemperature = 0  # average temperature of battery pack
-        self.stateOfCharge = 0
-        self.milesRange = 0
-
-        # hidden
-        self.current = 0            # instantaneous current of the pack
-        self.avgPackCurrent = 0     # average temperature of battery pack
-        self.highestTemperature = 0     # current highest temperature of the battery pack
-        self.highestTemperatureThermistorID = 0     # id of thermistor with highest temperature
-
-        ### motor controller signals ###
-
-        ### mppt charger controller signals ###
-
-        ### other signals ###
-
-        self.shutdownButton.pressed.connect(self.shutdown)
 
         # initialize log file
         self.initLogFile()
 
         # append to the logDict every minute
-        self.appendLogDictTimer = QTimer(self)
+        self.appendLogDictTimer = QTimer()
         self.appendLogDictTimer.setSingleShot(False)
         self.appendLogDictTimer.timeout.connect(self.appendLogDict)
         self.appendLogDictTimer.start(60000)
 
         # save json file every 5 minutes
-        self.saveLogJsonTimer = QTimer(self)
+        self.saveLogJsonTimer = QTimer()
         self.saveLogJsonTimer.setSingleShot(False)
         self.saveLogJsonTimer.timeout.connect(self.saveLogJson)
         self.saveLogJsonTimer.start(300000)
 
-        # pointer for read thread
-        self.ReadThread = None
-        self.readThread()
-
+        # update the GUI display every 250 ms
+        self.updateGUI_Timer = QTimer()
+        self.updateGUI_Timer.setSingleShot(False)
+        self.updateGUI_Timer.timeout.connect(self.updateGUI)
+        self.updateGUI_Timer.start(250)
 
     def readThread(self):
         """Thread for reading and deciphering incoming CAN messages"""
@@ -86,95 +66,60 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                 while True:
                     try:
                         ID, data = self.CAN.readMessage()
-                        print(data)
                         if ID is not None and data is not None:
                             if ID == 0x001:
                                 self.BMS.decodeMessage1(data)
-                                self.updateStatusBMS_Signal.emit()
-                                self.batteryUpdateGUI_Signal.emit()
                             elif ID == 0x002:
                                 self.BMS.decodeMessage2(data)
-                                self.updateStatusBMS_Signal.emit()
-                                self.batteryUpdateGUI_Signal.emit()
                     except:
                         print(traceback.format_exc())
         try:
             self.ReadThread = ReadThread()
             self.ReadThread.CAN = self.CAN
             self.ReadThread.BMS = self.CAN.BMS
-            self.ReadThread.updateStatusBMS_Signal.connect(self.updateStatusBMS)
-            self.ReadThread.batteryUpdateGUI_Signal.connect(self.batteryUpdateGUI)
             self.ReadThread.start()
         except:
             print(traceback.format_exc())
 
-    def updateStatusBMS(self):
-        """Update variables of battery"""
-        try:
-            BMS = self.CAN.BMS
-            self.voltage = BMS.getVoltage()
-            self.avgBatteryTemperature = BMS.getAvgBatteryTemp()
-            self.stateOfCharge = BMS.getSOC()
-            self.milesRange = 0
-            self.current = BMS.getCurrent()  # instantaneous current of the pack
-            self.avgPackCurrent = BMS.getAvgPackCurrent()  # average temperature of battery pack
-            self.highestTemperature = BMS.getHighestTemp()  # current highest temperature of the battery pack
-            self.highestTemperatureThermistorID = BMS.getHighetTempThermistorID()  # id of therm. with highest temp
-        except:
-            print(traceback.format_exc())
-
-    def batteryUpdateGUI(self):
-        """Updates battery stats (percentage, voltage, miles, temperature) on GUI"""
-        class BatteryUpdateGUIThread(QThread):
+    def updateGUI(self):
+        """Updates the GUI display every 250 ms"""
+        class UpdateGUI(QThread):
 
             def __init__(self):
                 QThread.__init__(self)
 
             def run(self):
-                # update the GUI battery status
-                self.chargePercentageBar.setValue(int(self.stateOfCharge))
-                self.milesText.setText(str(self.milesRange))
-                self.voltageText.setText(str(self.voltage))
-                self.batteryTemperatureText.setText(str(self.avgBatteryTemperature))
+                try:
+                    ##### update signal variables #####
+                    # battery
+                    BMS = self.BMS
+                    voltage = BMS.getVoltage()
+                    stateOfCharge = BMS.getSOC()
+                    avgBatteryTemperature = BMS.getAvgBatteryTemp()
+
+                    ###### update GUI display based on new signal variables #####
+                    # battery
+                    self.chargePercentageBar.setValue(int(stateOfCharge))
+                    self.milesText.setText('{} mi'.format(0))
+                    self.voltageText.setText('{} V'.format(voltage))
+                    self.batteryTemperatureText.setText('{} C'.format(avgBatteryTemperature))
+                    
+                except:
+                    print(traceback.format_exc())
+            
                 
         try:
-            self.batteryUpdateGUIThread = BatteryUpdateGUIThread()
-            myThread = self.batteryUpdateGUIThread
-            myThread.BMS = self.CAN.BMS
+            global ReadThreadPointer
+            ReadThreadPointer = UpdateGUI()
+            ReadThreadPointer.BMS = self.CAN.BMS
 
-            # battery data to display on Dashboard
-            myThread.voltage = self.voltage
-            myThread.avgBatteryTemperature = self.avgBatteryTemperature
-            myThread.stateOfCharge = self.stateOfCharge
-            myThread.milesRange = self.milesRange
+            # GUI widgets
+            ReadThreadPointer.chargePercentageBar = self.chargePercentageBar
+            ReadThreadPointer.milesText = self.milesText
+            ReadThreadPointer.voltageText = self.voltageText
+            ReadThreadPointer.batteryTemperatureText = self.batteryTemperatureText
 
-            # GUI display widgets
-            myThread.chargePercentageBar = self.chargePercentageBar
-            myThread.milesText = self.milesText
-            myThread.voltageText = self.voltageText
-            myThread.batteryTemperatureText = self.batteryTemperatureText
-
-            myThread.start()
-
-        except:
-            print(traceback.format_exc())
-
-    def speedUpdate(self):
-        """Updates speedometer on GUI"""
-        class SpeedUpdateThread(QThread):
-            def __init__(self):
-                QThread.__init__(self)
-            def run(self):
-                if int(self.speed) != int(self.prevSpeed):
-                    self.speedometer.intValue(int(self.speed))
-
-        try:
-            self.speedUpdateThread = SpeedUpdateThread()
-            myThread = self.speedUpdateThread
-            myThread.speed = self.speed
-            myThread.prevSpeed = self.prevSpeed
-            myThread.speedometer = self.speedometer
-            myThread.start()
+            ReadThreadPointer.start()
         except:
             print(traceback.format_exc())
 
@@ -183,9 +128,12 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         try:
             self.appendLogDictTimer.stop()
             self.saveLogJsonTimer.stop()
+            self.appendLogDict
             self.saveLogJson()
             self.endLogFile()
+            
 ##            call('sudo shutdown now', shell=True)
+            exit()
         except:
             print(traceback.format_exc())
 
@@ -193,7 +141,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         """Initialize the log file and write the starting time as the file header"""
         try:
             with open(self.logFilePath, 'w') as f:
-                header = 'Starting time: {}'.format(self.startTime.__str__())
+                header = 'Starting time: {}\n'.format(self.startTime.__str__())
                 f.write(header)
                 f.close()
         except:
@@ -217,7 +165,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         try:
             with open(self.logFilePath, 'a') as f:
                 self.endTime = datetime.now()
-                header = 'Ending time: {}'.format(self.endTime.__str__())
+                header = '\nEnding time: {}'.format(self.endTime.__str__())
                 f.write(header)
                 f.close()
         except:
@@ -226,18 +174,19 @@ class Dashboard(QMainWindow, Ui_MainWindow):
     def appendLogDict(self):
         """Called every minute. Adds another entry to the logDict"""
         try:
+            BMS = self.CAN.BMS
             timestamp = datetime.now().__str__()
             self.logDict[timestamp] = {}
 
             # battery information
-            self.logDict[timestamp]['Voltage'] = self.voltage
-            self.logDict[timestamp]['AverageBatteryTemperature'] = self.avgBatteryTemperature
-            self.logDict[timestamp]['StateOfCharge'] = self.stateOfCharge
-            self.logDict[timestamp]['MilesRange'] = self.milesRange
-            self.logDict[timestamp]['Current'] = self.current
-            self.logDict[timestamp]['AveragePackCurrent'] = self.avgPackCurrent
-            self.logDict[timestamp]['HighestBatteryTemperature'] = self.highestTemperature
-            self.logDict[timestamp]['ThermistorID'] = self.highestTemperatureThermistorID
+            self.logDict[timestamp]['Voltage'] = BMS.getVoltage()
+            self.logDict[timestamp]['AverageBatteryTemperature'] = BMS.getAvgBatteryTemp()
+            self.logDict[timestamp]['StateOfCharge'] = BMS.getSOC()
+            self.logDict[timestamp]['MilesRange'] = 0
+            self.logDict[timestamp]['Current'] = BMS.getCurrent()
+            self.logDict[timestamp]['AveragePackCurrent'] = BMS.getAvgPackCurrent()
+            self.logDict[timestamp]['HighestBatteryTemperature'] = BMS.getHighestTemp() 
+            self.logDict[timestamp]['ThermistorID'] = BMS.getHighetTempThermistorID()
 
         except KeyError as err:
             print(str(err))
@@ -246,10 +195,20 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             print(traceback.format_exc())
 
 def main():
-    app = QApplication(sys.argv)
-    form = Dashboard()
-    form.show()
-    app.exec_()
+    try:
+        app = QApplication(sys.argv)
+        app.setStyle("fusion")
+        form = Dashboard()
+        form.show()
+
+        # creat CAN_Control object and start reading from CAN-bus
+        form.CAN = CAN_Control()
+        form.readThread()
+
+    except:
+        print(traceback.format_exc())
+    finally:
+        app.exec_()
 
 if __name__ == '__main__':
     main()
