@@ -36,7 +36,7 @@ class CAN_Control():
             self.notifier = can.Notifier(self.bus, [self.bufferedReader])
         except:
             print(traceback.print_exc())
-
+    
     def readMessage(self, timeout = 0.1):
         """grabs a message from the buffered reader and returns the arbitration ID and data fields"""
         try:
