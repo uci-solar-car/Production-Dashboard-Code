@@ -1,3 +1,6 @@
+# 11/28/2019 Changelog
+# Added decoding of message for BMS statuses
+
 import can
 import can.interfaces
 import subprocess
@@ -17,10 +20,10 @@ class CAN_Control():
     def initCAN(self):
         try:
             # send out command to set up can0 from the shell to interface CAN controller hardware
-            call('sudo /sbin/ip link set can0 up type can bitrate 500000', shell=True)
+            call('sudo ip link set can0 up type can bitrate 500000', shell=True)
 
             # initialize Bus object
-            self.bus = Bus()
+            self.bus = Bus(channel='can0', bustype='socketcan_native')
 
             # initialize message buffer to store incoming CAN messages
             self.bufferedReader = can.BufferedReader()
@@ -99,11 +102,28 @@ class CAN_Control():
             """Decode CAN message with ID# 0x001. Message includes Failsafe Statuses, Inst. Pack Voltage,
                 Inst. Pack Current, Highest Temperature, Thermistor ID with Highest Temperature"""
             try:
-                self.failsafeStat = data & 0xFFFF
-                self.voltage = (data >> 16) & 0xFFFF
-                self.current = (data >>32) & 0xFFFF
-                self.highestTemperature = (data >> 48) & 0xFF
-                self.highestTemperatureThermistorID = (data >> 56) & 0xFF
+                # failsafe statuses
+                self.failsafeStat = (data[1] | data [0])
+                self.voltageFailsafeActive = self.failsafeStat & 0x1
+                self.currentFailsafeActive = (self.failsafeStat >> 1) & 0x1
+                self.relayFailsafeActive = (self.failsafeStat >> 2) & 0x1
+                self.cellBalancingActive = (self.failsafeStat >> 3) & 0x1
+                self.chargeInterlockFailsafeActive = (self.failsafeStat >> 4) & 0x1
+                self.thermistorBValueTableInvalid = (self.failsafeStat >> 5) & 0x1
+                self.inputPowerSupplyFailsafeActive = (self.failsafeStat >> 6) & 0x1
+
+                # pack instantaneous voltage
+                self.voltage = (data[3] | data[2])
+
+                # pack instantaneous current
+                self.current = (data[5] | data[4])
+                
+                # highest temperature
+                self.highestTemperature = data[6]
+
+                # id of thermistor with highest temperature
+                self.highestTemperatureThermistorID = data[7]
+                
             except:
                 print(traceback.format_exc())
 
@@ -111,8 +131,19 @@ class CAN_Control():
             """Decode CAN message with ID# 0x002. Message includes State of Charge, Average Temperature, Average Pack
                 Current. """
             try:
-                self.stateOfCharge = data & 0xFFFF
-                self.avgBatteryTemperature = (data >> 16) & 0xFFFF
-                self.avgPackCurrent = (data >> 32) & 0xFFFF
+                # state of charge
+                self.stateOfCharge = (data[1] | data[0])
+
+                # average battery temperature
+                self.avgBatteryTemperature = (data[3] | data[2])
+
+                # average pack current
+                self.avgPackCurrent = (data[5] | data[4])
+                
             except:
                 print(traceback.format_exc())
+
+##if __name__ == '__main__':
+##    CAN = CAN_Control()
+##    while True:
+##        CAN.readMessage()
