@@ -1,3 +1,6 @@
+# 11/29/2019 Changelog
+# Added class for MCU and speed
+
 # 11/28/2019 Changelog
 # Added decoding of message for BMS statuses
 
@@ -15,6 +18,7 @@ class CAN_Control():
         self.bufferedReader = None
         self.notifier = None
         self.BMS = self.BMS_Control()
+        self.MCU = self.MCU_Control()
         self.initCAN()
 
     def initCAN(self):
@@ -99,7 +103,7 @@ class CAN_Control():
             return self.avgPackCurrent
 
         def decodeMessage1(self, data):
-            """Decode CAN message with ID# 0x001. Message includes Failsafe Statuses, Inst. Pack Voltage,
+            """Decode CAN message from BMS with ID# 0x001. Message includes Failsafe Statuses, Inst. Pack Voltage,
                 Inst. Pack Current, Highest Temperature, Thermistor ID with Highest Temperature"""
             try:
                 # failsafe statuses
@@ -128,8 +132,8 @@ class CAN_Control():
                 print(traceback.format_exc())
 
         def decodeMessage2(self, data):
-            """Decode CAN message with ID# 0x002. Message includes State of Charge, Average Temperature, Average Pack
-                Current. """
+            """Decode CAN message from BMS with ID# 0x002. Message includes State of Charge, Average Temperature,
+                Average Pack Current. """
             try:
                 # state of charge
                 self.stateOfCharge = (data[1] | data[0])
@@ -140,6 +144,22 @@ class CAN_Control():
                 # average pack current
                 self.avgPackCurrent = (data[5] | data[4])
                 
+            except:
+                print(traceback.format_exc())
+
+    class MCU_Control():
+        def __init__(self):
+            self.msgID = 0x003
+            self.speed = 0
+
+        def get_speed(self):
+            return self.speed
+
+        def decodeMessage(self, data):
+            """Decode CAN message from MCU. Message includes Speed"""
+            try:
+                # speed
+                self.speed = data[0]
             except:
                 print(traceback.format_exc())
 
