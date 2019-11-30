@@ -1,4 +1,7 @@
 # Changelog
+# 11/29/2019 Changelog
+# Added call for MCU and speed signal
+
 # 11/26/2019 Changelog
 # Updated variables related to BMS
 
@@ -71,13 +74,17 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                                 self.BMS.decodeMessage1(data)
                             elif ID == 0x002:
                                 self.BMS.decodeMessage2(data)
+                            elif ID == 0x003:
+                                self.MCU.decodeMessage(data)
                     except:
                         print(traceback.format_exc())
         try:
-            self.ReadThread = ReadThread()
-            self.ReadThread.CAN = self.CAN
-            self.ReadThread.BMS = self.CAN.BMS
-            self.ReadThread.start()
+            global ReadThreadPointer
+            ReadThreadPointer = ReadThread()
+            ReadThreadPointer.CAN = self.CAN
+            ReadThreadPointer.BMS = self.CAN.BMS
+            ReadThreadPointer.MCU = self.CAN.MCU
+            ReadThreadPointer.start()
         except:
             print(traceback.format_exc())
 
@@ -91,35 +98,44 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             def run(self):
                 try:
                     ##### update signal variables #####
-                    # battery
+                    # BMS
                     BMS = self.BMS
                     voltage = BMS.getVoltage()
                     stateOfCharge = BMS.getSOC()
                     avgBatteryTemperature = BMS.getAvgBatteryTemp()
 
+                    # MCU
+                    MCU = self.MCU
+                    speed = MCU.getSpeed()
+
                     ###### update GUI display based on new signal variables #####
-                    # battery
+                    # BMS
                     self.chargePercentageBar.setValue(int(stateOfCharge))
                     self.milesText.setText('{} mi'.format(0))
                     self.voltageText.setText('{} V'.format(voltage))
                     self.batteryTemperatureText.setText('{} C'.format(avgBatteryTemperature))
-                    
+
+                    # MCU
+                    self.speedometer.display(speed)
+
                 except:
                     print(traceback.format_exc())
             
                 
         try:
-            global ReadThreadPointer
-            ReadThreadPointer = UpdateGUI()
-            ReadThreadPointer.BMS = self.CAN.BMS
+
+            updateGUI_Thread = UpdateGUI()
+            updateGUI_Thread.BMS = self.CAN.BMS
+            updateGUI_Thread.MCU = self.CAN.MCU
 
             # GUI widgets
-            ReadThreadPointer.chargePercentageBar = self.chargePercentageBar
-            ReadThreadPointer.milesText = self.milesText
-            ReadThreadPointer.voltageText = self.voltageText
-            ReadThreadPointer.batteryTemperatureText = self.batteryTemperatureText
+            updateGUI_Thread.chargePercentageBar = self.chargePercentageBar
+            updateGUI_Thread.milesText = self.milesText
+            updateGUI_Thread.voltageText = self.voltageText
+            updateGUI_Thread.batteryTemperatureText = self.batteryTemperatureText
+            updateGUI_Thread.speedometer = self.speedometer
 
-            ReadThreadPointer.start()
+            updateGUI_Thread.start()
         except:
             print(traceback.format_exc())
 
@@ -128,7 +144,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         try:
             self.appendLogDictTimer.stop()
             self.saveLogJsonTimer.stop()
-            self.appendLogDict
+            self.appendLogDict()
             self.saveLogJson()
             self.endLogFile()
             
@@ -149,7 +165,27 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def saveLogJson(self):
         """Convert the log dict into json and write into a json file. Clear the log dict after json file is updated"""
+        class SaveLogJson(QThread):
+            def __init__(self):
+                QThread.__init__(self)
+            def run(self):
+                try:
+                    with open(self.logFilePath, 'a') as f:
+                        logJson = json.dumps(self.logDict, sort_keys=True, indent=4)
+                        f.write(logJson)
+                        f.close()
+                    self.logDict.clear()
+                except FileNotFoundError as err:
+                    print(traceback.format_exc())
+                except:
+                    print(traceback.format_exc())
+
         try:
+            myThread = SaveLogJson()
+            myThread.logFilePath = self.logFilePath
+            myThread.logDict = self.logDict
+            myThread.start()
+            """
             with open(self.logFilePath, 'a') as f:
                 logJson = json.dumps(self.logDict, sort_keys=True, indent=4)
                 f.write(logJson)
@@ -157,6 +193,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.logDict.clear()
         except FileNotFoundError as err:
             print(str(err))
+            """
         except:
             print(traceback.format_exc())
 
@@ -173,7 +210,37 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def appendLogDict(self):
         """Called every minute. Adds another entry to the logDict"""
+        class AppendLogDict(QThread):
+
+            def __init__(self):
+                QThread.__init__(self)
+
+            def run(self):
+                try:
+                    self.logDict[self.timestamp] = {}
+                    self.logDict[self.timestamp]['Voltage'] = BMS.getVoltage()
+                    self.logDict[self.timestamp]['AverageBatteryTemperature'] = BMS.getAvgBatteryTemp()
+                    self.logDict[self.timestamp]['StateOfCharge'] = BMS.getSOC()
+                    self.logDict[self.timestamp]['MilesRange'] = 0
+                    self.logDict[self.timestamp]['Current'] = BMS.getCurrent()
+                    self.logDict[self.timestamp]['AveragePackCurrent'] = BMS.getAvgPackCurrent()
+                    self.logDict[self.timestamp]['HighestBatteryTemperature'] = BMS.getHighestTemp()
+                    self.logDict[self.timestamp]['ThermistorID'] = BMS.getHighetTempThermistorID()
+                    self.logDict[self.timestamp]['Speed'] = MCU.getSpeed()
+                except KeyError as err:
+                    print(str(err))
+                except:
+                    print(traceback.format_exc())
+
         try:
+            myThread = AppendLogDict()
+            myThread.BMS = self.CAN.BMS
+            myThread.MCU = self.CAN.MCU
+            myThread.timestamp = datetime.now().__str__()
+            myThread.logDict = self.logDict
+            myThread.start()
+
+            """
             BMS = self.CAN.BMS
             timestamp = datetime.now().__str__()
             self.logDict[timestamp] = {}
@@ -187,10 +254,11 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.logDict[timestamp]['AveragePackCurrent'] = BMS.getAvgPackCurrent()
             self.logDict[timestamp]['HighestBatteryTemperature'] = BMS.getHighestTemp() 
             self.logDict[timestamp]['ThermistorID'] = BMS.getHighetTempThermistorID()
-
+            
         except KeyError as err:
             print(str(err))
             pass
+            """
         except:
             print(traceback.format_exc())
 
@@ -201,7 +269,7 @@ def main():
         form = Dashboard()
         form.show()
 
-        # creat CAN_Control object and start reading from CAN-bus
+        # create object for CAN_Control and start reading from CAN-bus
         form.CAN = CAN_Control()
         form.readThread()
 
