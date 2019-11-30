@@ -88,6 +88,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                                 self.MCU.decodeMessage(data)
                     except:
                         print(traceback.format_exc())
+                        
         try:
             self.readThread = ReadThread()
             self.readThread.CAN = self.CAN
@@ -157,7 +158,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.saveLogJson()
             self.saveLogJsonThread.wait()
             self.endLogFile()
-            
+            self.readThread.terminate()
 ##            call('sudo shutdown now', shell=True)
             exit()
         except:
