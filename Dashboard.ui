@@ -112,16 +112,13 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer">
+        <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>70</width>
+           <width>40</width>
            <height>20</height>
           </size>
          </property>
@@ -141,7 +138,7 @@
           <string notr="true">color: rgb(255,255,255)</string>
          </property>
          <property name="text">
-          <string>0 V</string>
+          <string>300 V</string>
          </property>
         </widget>
        </item>
@@ -164,17 +161,14 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer_2">
+        <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
-           <height>20</height>
+           <width>28</width>
+           <height>37</height>
           </size>
          </property>
         </spacer>
@@ -190,7 +184,7 @@
           <string notr="true">color: rgb(255,255,255)</string>
          </property>
          <property name="text">
-          <string>0 C</string>
+          <string>300 F</string>
          </property>
         </widget>
        </item>
@@ -221,12 +215,9 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>35</width>
+           <width>40</width>
            <height>20</height>
           </size>
          </property>
@@ -243,7 +234,7 @@
           <string notr="true">color: white</string>
          </property>
          <property name="text">
-          <string>0 mi</string>
+          <string>100 mi</string>
          </property>
         </widget>
        </item>
