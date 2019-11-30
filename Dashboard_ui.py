@@ -31,30 +31,12 @@ class Ui_MainWindow(object):
         self.logo.setStyleSheet("")
         self.logo.setObjectName("logo")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(560, 140, 191, 191))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(570, 190, 191, 191))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.chargePercentageBar = QtWidgets.QProgressBar(self.verticalLayoutWidget)
-        self.chargePercentageBar.setStyleSheet(" QProgressBar::chunk {\n"
-"     background-color: #3add36;\n"
-"     width: 1px;\n"
-" }\n"
-"\n"
-" QProgressBar {\n"
-"     border: 2px solid grey;\n"
-"     border-radius: 0px;\n"
-"     text-align: center;\n"
-" }")
-        self.chargePercentageBar.setProperty("value", 90)
-        self.chargePercentageBar.setInvertedAppearance(False)
-        self.chargePercentageBar.setObjectName("chargePercentageBar")
-        self.horizontalLayout_3.addWidget(self.chargePercentageBar)
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.voltageLabel = QtWidgets.QLabel(self.verticalLayoutWidget)
@@ -183,6 +165,27 @@ class Ui_MainWindow(object):
         self.label.setGeometry(QtCore.QRect(10, 400, 81, 71))
         self.label.setStyleSheet("")
         self.label.setObjectName("label")
+        self.widget = QtWidgets.QWidget(self.centralwidget)
+        self.widget.setGeometry(QtCore.QRect(570, 140, 189, 42))
+        self.widget.setObjectName("widget")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.chargePercentageBar = QtWidgets.QProgressBar(self.widget)
+        self.chargePercentageBar.setStyleSheet(" QProgressBar::chunk {\n"
+"     background-color: #3add36;\n"
+"     width: 1px;\n"
+" }\n"
+"\n"
+" QProgressBar {\n"
+"     border: 2px solid grey;\n"
+"     border-radius: 0px;\n"
+"     text-align: center;\n"
+" }")
+        self.chargePercentageBar.setProperty("value", 90)
+        self.chargePercentageBar.setInvertedAppearance(False)
+        self.chargePercentageBar.setObjectName("chargePercentageBar")
+        self.horizontalLayout_3.addWidget(self.chargePercentageBar)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)

@@ -56,8 +56,8 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>560</x>
-      <y>140</y>
+      <x>570</x>
+      <y>190</y>
       <width>191</width>
       <height>191</height>
      </rect>
@@ -66,32 +66,6 @@
      <property name="sizeConstraint">
       <enum>QLayout::SetFixedSize</enum>
      </property>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QProgressBar" name="chargePercentageBar">
-         <property name="styleSheet">
-          <string notr="true"> QProgressBar::chunk {
-     background-color: #3add36;
-     width: 1px;
- }
-
- QProgressBar {
-     border: 2px solid grey;
-     border-radius: 0px;
-     text-align: center;
- }</string>
-         </property>
-         <property name="value">
-          <number>90</number>
-         </property>
-         <property name="invertedAppearance">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
@@ -366,6 +340,40 @@ QPushButton:pressed {
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/img/warning&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>140</y>
+      <width>189</width>
+      <height>42</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QProgressBar" name="chargePercentageBar">
+       <property name="styleSheet">
+        <string notr="true"> QProgressBar::chunk {
+     background-color: #3add36;
+     width: 1px;
+ }
+
+ QProgressBar {
+     border: 2px solid grey;
+     border-radius: 0px;
+     text-align: center;
+ }</string>
+       </property>
+       <property name="value">
+        <number>90</number>
+       </property>
+       <property name="invertedAppearance">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
  </widget>
