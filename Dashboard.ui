@@ -128,7 +128,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>60</width>
+           <width>70</width>
            <height>20</height>
           </size>
          </property>
@@ -148,7 +148,7 @@
           <string notr="true">color: rgb(255,255,255)</string>
          </property>
          <property name="text">
-          <string>0 V</string>
+          <string>96 V</string>
          </property>
         </widget>
        </item>
@@ -180,7 +180,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>10</width>
+           <width>20</width>
            <height>20</height>
           </size>
          </property>
@@ -197,7 +197,7 @@
           <string notr="true">color: rgb(255,255,255)</string>
          </property>
          <property name="text">
-          <string>50 F</string>
+          <string>120 C</string>
          </property>
         </widget>
        </item>
@@ -233,7 +233,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>30</width>
+           <width>35</width>
            <height>20</height>
           </size>
          </property>
