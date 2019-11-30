@@ -152,7 +152,7 @@ class CAN_Control():
             self.msgID = 0x003
             self.speed = 0
 
-        def get_speed(self):
+        def getSpeed(self):
             return self.speed
 
         def decodeMessage(self, data):
