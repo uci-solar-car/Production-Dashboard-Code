@@ -77,10 +77,11 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.rightBlinkThread = None
         self.leftBlinkThread = None
 
+        self.rightFlag = False
+
     def startReadThread(self):
         """Thread for reading and deciphering incoming CAN messages"""
         class ReadThread(QThread):
-            
             def __init__(self):
                 QThread.__init__(self)
 
@@ -97,6 +98,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                                 self.MCU.decodeMessage(data)
                             elif ID == 0x004:
                                 self.Blinkers.decodeMessage(data)
+                                    
                     except:
                         print(traceback.format_exc())
                         
@@ -113,7 +115,10 @@ class Dashboard(QMainWindow, Ui_MainWindow):
     def updateGUI(self):
         """Updates the GUI display every 250 ms"""
         class UpdateGUI(QThread):
-
+            startBlinkRightSignal = pyqtSignal()
+            stopBlinkRightSignal =  pyqtSignal()
+            setRightFlagSignal = pyqtSignal()
+            removeRightFlagSignal = pyqtSignal()
             def __init__(self):
                 QThread.__init__(self)
 
@@ -140,6 +145,17 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     # MCU
                     self.speedometer.display(speed)
 
+                    """
+                    print(self.Blinkers.getRightBlinker())
+                    if (self.Blinkers.getRightBlinker() == 1):
+                        if self.rightFlag == False:
+                            self.setRightFlagSignal.emit()
+                            self.startBlinkRightSignal.emit()
+                    elif self.Blinkers.getRightBlinker() == 0:
+                        if self.rightFlag == True:
+                            self.removeRightFlagSignal.emit()
+                            self.stopBlinkRightSignal.emit()
+                    """
                 except:
                     print(traceback.format_exc())
             
@@ -148,6 +164,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.updateGUI_Thread = UpdateGUI()
             self.updateGUI_Thread.BMS = self.BMS
             self.updateGUI_Thread.MCU = self.MCU
+            self.updateGUI_Thread.Blinkers = self.Blinkers
 
             # GUI widgets
             self.updateGUI_Thread.chargePercentageBar = self.chargePercentageBar
@@ -156,22 +173,34 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.updateGUI_Thread.batteryTemperatureText = self.batteryTemperatureText
             self.updateGUI_Thread.speedometer = self.speedometer
 
+            self.updateGUI_Thread.setRightFlagSignal.connect(self.setRightFlag)
+            self.updateGUI_Thread.removeRightFlagSignal.connect(self.setRightFlag)
+            self.updateGUI_Thread.rightFlag = self.rightFlag
+            self.updateGUI_Thread.startBlinkRightSignal.connect(self.startBlinkRight)
+            self.updateGUI_Thread.stopBlinkRightSignal.connect(self.stopBlinkRight)
+            
             self.updateGUI_Thread.start()
         except:
             print(traceback.format_exc())
+
+    def setRightFlag(self):
+        self.rightFlag = True
+
+    def removeRightFlag(self):
+        self.rightFlag = False
 
     def startBlinkRight(self):
         """Blink the right signal"""
         class BlinkRight(QThread):
             stopBlinkLeftSignal = pyqtSignal()
-            stopBlinkRightSignal = pyqtSignal
+            stopBlinkRightSignal = pyqtSignal()
 
             def __init__(self):
                 QThread.__init__(self)
 
             def run(self):
-                self.stopBlinkLeftSignal.emit()
-                while (self.Blinkers.getRightBlinker() == 1):
+                while True:
+                    #self.stopBlinkLeftSignal.emit()
                     # turn on right signal arrow
                     self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrowOn);")
                     self.msleep(500)
@@ -180,13 +209,12 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
                     self.msleep(500)
 
-                self.stopBlinkRightSignal.emit()
-
         try:
+            global rightBlinkFlag
             self.rightBlinkThread = BlinkRight()
             self.rightBlinkThread.Blinkers = self.Blinkers
             self.rightBlinkThread.rightArrow = self.rightArrow
-            self.rightBlinkThread.stopBlinkLeftSignl.connect(self.stopBlinkLeft)
+            self.rightBlinkThread.stopBlinkLeftSignal.connect(self.stopBlinkLeft)
             self.rightBlinkThread.stopBlinkRightSignal.connect(self.stopBlinkRight)
             self.rightBlinkThread.start()
         except:
@@ -195,9 +223,9 @@ class Dashboard(QMainWindow, Ui_MainWindow):
     def stopBlinkRight(self):
         """End the blinking of the right signal"""
         try:
-            if self.rightBlinkThread != None:
-                self.rightBlinkThread.quit()
-                self.rightBlinkThread = None
+            print('exit')
+            self.rightBlinkThread.quit()
+            
             self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
         except:
             print(traceback.format_exc())
@@ -206,7 +234,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         """Blink the left signal"""
         class BlinkLeft(QThread):
             stopBlinkLeftSignal = pyqtSignal()
-            stopBlinkRightSignal = pyqtSignal
+            stopBlinkRightSignal = pyqtSignal()
 
             def __init__(self):
                 QThread.__init__(self)
@@ -248,7 +276,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         """Blink the hazard signal"""
         class BlinkHazard(QThread):
             stopBlinkLeftSignal = pyqtSignal()
-            stopBlinkRightSignal = pyqtSignal
+            stopBlinkRightSignal = pyqtSignal()
 
             def __init__(self):
                 QThread.__init__(self)
@@ -292,7 +320,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.saveLogJson()
             self.saveLogJsonThread.wait()
             self.endLogFile()
-            self.readThread.terminate()
+            self.readThread.exit()
 ##            call('sudo shutdown now', shell=True)
             exit()
         except:
