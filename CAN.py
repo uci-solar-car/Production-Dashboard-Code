@@ -1,3 +1,6 @@
+# 12/6/2019 Changelog
+# Added class for Blinkers
+
 # 11/29/2019 Changelog
 # Added class for MCU and speed
 
@@ -19,6 +22,7 @@ class CAN_Control():
         self.notifier = None
         self.BMS = self.BMS_Control()
         self.MCU = self.MCU_Control()
+        self.Blinkers = self.Blinkers_Control()
         self.initCAN()
 
     def initCAN(self):
@@ -160,6 +164,37 @@ class CAN_Control():
             try:
                 # speed
                 self.speed = data[0]
+            except:
+                print(traceback.format_exc())
+
+    class Blinkers_Control():
+        def __init__(self):
+            self.msgID = 0x004
+            self.rightBlinker = 0
+            self.leftBlinker = 0
+            self.hazardBlinker = 0
+
+        def getRightBlinker(self):
+            return self.rightBlinker
+
+        def getLeftBlinker(self):
+            return self.leftBlinker
+
+        def getHazardBlinker(self):
+            return self.hazardBlinker
+
+        def decodeMessage(self, data):
+            """Decode CAN message from blinker. Message includes status of hazards, right, and left blinker"""
+            try:
+                # hazard
+                self.hazardBlinker = data[0]
+
+                # right
+                self.rightBlinker = data[1]
+
+                # left
+                self.leftBlinker = data[2]
+
             except:
                 print(traceback.format_exc())
 

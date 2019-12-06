@@ -66,7 +66,7 @@
      <item>
       <widget class="QLabel" name="pLabel">
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(109, 109, 109);</string>
+        <string notr="true"/>
        </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:16pt; color:#ffffff;&quot;&gt;P&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -89,6 +89,9 @@
      </item>
      <item>
       <widget class="QLabel" name="dLabel">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(109, 109, 109);</string>
+       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:16pt; color:#ffffff;&quot;&gt;D&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -129,7 +132,7 @@ background-color: rgba(255,255,255,0)</string>
      <enum>QLCDNumber::Filled</enum>
     </property>
     <property name="intValue" stdset="0">
-     <number>50</number>
+     <number>45</number>
     </property>
    </widget>
    <widget class="QLabel" name="mphLabel">
@@ -166,15 +169,21 @@ color:white;</string>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="leftArrow">
+       <property name="styleSheet">
+        <string notr="true">border-image: url(:/img/leftArrow);</string>
+       </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/img/leftArrow&quot;width=&quot;150&quot; height=&quot;100&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="rightArrow">
+       <property name="styleSheet">
+        <string notr="true">border-image: url(:/img/rightArrow);</string>
+       </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/img/rightArrow&quot;width=&quot;150&quot; height=&quot;100&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -222,7 +231,7 @@ QPushButton:pressed {
      <rect>
       <x>570</x>
       <y>210</y>
-      <width>168</width>
+      <width>173</width>
       <height>114</height>
      </rect>
     </property>
@@ -255,7 +264,7 @@ QPushButton:pressed {
         <string notr="true">color: rgb(255,255,255)</string>
        </property>
        <property name="text">
-        <string>300</string>
+        <string>83</string>
        </property>
       </widget>
      </item>
@@ -290,7 +299,7 @@ QPushButton:pressed {
         <string notr="true">color: rgb(255,255,255)</string>
        </property>
        <property name="text">
-        <string>300</string>
+        <string>12.5</string>
        </property>
       </widget>
      </item>
@@ -337,7 +346,7 @@ QPushButton:pressed {
         <string notr="true">color: white</string>
        </property>
        <property name="text">
-        <string>100</string>
+        <string>74</string>
        </property>
       </widget>
      </item>

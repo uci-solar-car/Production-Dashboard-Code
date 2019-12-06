@@ -1,4 +1,7 @@
 # Changelog
+# 12/6/2019 Changlelog
+# Added call for left, right, and hazard blinkers
+
 # 11/29/2019 Changelog
 # Added call for MCU and speed signal
 
@@ -32,6 +35,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.CAN = CAN_Control()
         self.BMS = self.CAN.BMS
         self.MCU = self.CAN.MCU
+        self.Blinkers = self.CAN.Blinkers
 
         # connect shutdown button
         self.shutdownButton.pressed.connect(self.shutdown)
@@ -68,6 +72,11 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.updateGUI_Timer.timeout.connect(self.updateGUI)
         self.updateGUI_Timer.start(250)
 
+        # blinker threads
+        self.hazardBlinkThread = None
+        self.rightBlinkThread = None
+        self.leftBlinkThread = None
+
     def startReadThread(self):
         """Thread for reading and deciphering incoming CAN messages"""
         class ReadThread(QThread):
@@ -86,6 +95,8 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                                 self.BMS.decodeMessage2(data)
                             elif ID == 0x003:
                                 self.MCU.decodeMessage(data)
+                            elif ID == 0x004:
+                                self.Blinkers.decodeMessage(data)
                     except:
                         print(traceback.format_exc())
                         
@@ -94,6 +105,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.readThread.CAN = self.CAN
             self.readThread.BMS = self.BMS
             self.readThread.MCU = self.MCU
+            self.readThread.Blinkers = self.Blinkers
             self.readThread.start()
         except:
             print(traceback.format_exc())
@@ -145,6 +157,128 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.updateGUI_Thread.speedometer = self.speedometer
 
             self.updateGUI_Thread.start()
+        except:
+            print(traceback.format_exc())
+
+    def startBlinkRight(self):
+        """Blink the right signal"""
+        class BlinkRight(QThread):
+            stopBlinkLeftSignal = pyqtSignal()
+            stopBlinkRightSignal = pyqtSignal
+
+            def __init__(self):
+                QThread.__init__(self)
+
+            def run(self):
+                self.stopBlinkLeftSignal.emit()
+                while (self.Blinkers.getRightBlinker() == 1):
+                    # turn on right signal arrow
+                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                    self.msleep(500)
+
+                    # turn off right signal arrow
+                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
+                    self.msleep(500)
+
+                self.stopBlinkRightSignal.emit()
+
+        try:
+            self.rightBlinkThread = BlinkRight()
+            self.rightBlinkThread.Blinkers = self.Blinkers
+            self.rightBlinkThread.rightArrow = self.rightArrow
+            self.rightBlinkThread.stopBlinkLeftSignl.connect(self.stopBlinkLeft)
+            self.rightBlinkThread.stopBlinkRightSignal.connect(self.stopBlinkRight)
+            self.rightBlinkThread.start()
+        except:
+            print(traceback.format_exc())
+
+    def stopBlinkRight(self):
+        """End the blinking of the right signal"""
+        try:
+            if self.rightBlinkThread != None:
+                self.rightBlinkThread.quit()
+                self.rightBlinkThread = None
+            self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
+        except:
+            print(traceback.format_exc())
+
+    def startBlinkLeft(self):
+        """Blink the left signal"""
+        class BlinkLeft(QThread):
+            stopBlinkLeftSignal = pyqtSignal()
+            stopBlinkRightSignal = pyqtSignal
+
+            def __init__(self):
+                QThread.__init__(self)
+
+            def run(self):
+                self.stopBlinkRightSignal.emit()
+                while (self.Blinkers.getLeftBlinker() == 1):
+                    # turn on right signal arrow
+                    self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrowOn);")
+                    self.msleep(500)
+
+                    # turn off right signal arrow
+                    self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrow);")
+                    self.msleep(500)
+
+                self.stopBlinkLeftSignal.emit()
+
+        try:
+            self.leftBlinkThread = BlinkLeft()
+            self.leftBlinkThread.Blinkers = self.Blinkers
+            self.leftBlinkThread.leftArrow = self.leftArrow
+            self.leftBlinkThread.stopBlinkLeftSignl.connect(self.stopBlinkLeft)
+            self.leftBlinkThread.stopBlinkRightSignal.connect(self.stopBlinkRight)
+            self.leftBlinkThread.start()
+        except:
+            print(traceback.format_exc())
+
+    def stopBlinkLeft(self):
+        """End the blinking of the left signal"""
+        try:
+            if self.leftBlinkThread != None:
+                self.leftBlinkThread.quit()
+                self.leftBlinkThread = None
+            self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrow);")
+        except:
+            print(traceback.format_exc())
+
+    def startBlinkHazard(self):
+        """Blink the hazard signal"""
+        class BlinkHazard(QThread):
+            stopBlinkLeftSignal = pyqtSignal()
+            stopBlinkRightSignal = pyqtSignal
+
+            def __init__(self):
+                QThread.__init__(self)
+
+            def run(self):
+                self.stopBlinkLeftSignal.emit()
+                self.stopBlinkRightSignal.emit()
+                while (self.Blinkers.getHazardBlinker() == 1):
+                    # turn on both left and right signal arrows
+                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                    self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrowOn);")
+                    self.msleep(500)
+
+                    # turn off both left and right signal arrows
+                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
+                    self.leftArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
+                    self.msleep(500)
+
+                self.stopBlinkLeftSignal.emit()
+                self.stopBlinkRightSignal.emit()
+                self.quit()
+
+        try:
+            self.hazardBlinkThread = BlinkHazard()
+            self.hazardBlinkThread.Blinkers = self.Blinkers
+            self.hazardBlinkThread.rightArrow = self.rightArrow
+            self.hazardBlinkThread.leftArrow = self.leftArrow
+            self.hazardBlinkThread.stopBlinkLeftSignl.connect(self.stopBlinkLeft)
+            self.hazardBlinkThread.stopBlinkRightSignal.connect(self.stopBlinkRight)
+            self.hazardBlinkThread.start()
         except:
             print(traceback.format_exc())
 
