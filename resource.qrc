@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="img">
+    <file alias="cruiseControl">graphics/cruiseControl.png</file>
+    <file alias="hazards">graphics/hazards.png</file>
+    <file alias="lowbeams">graphics/lowbeams.png</file>
     <file alias="warning">graphics/baseline_warning_white_36dp.png</file>
     <file alias="warningYellow">graphics/baseline_warning_yellow_36dp.png</file>
     <file alias="shutdownRed">graphics/baseline_power_settings_new_red_36dp.png</file>
