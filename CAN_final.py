@@ -158,47 +158,89 @@ class CAN_Control():
     class MCU_Control():
         def __init__(self):
             self.msgID = 0x003
-            self.speed = 0
+            self.speed = 0  # speed in mph
+            self.gearPosition = 0  # 0 = Park, 1 = Reverse, 2 = Neutral, 3 = Drive
+            self.cruiseControl = 0  # 0 = Cruise Control On, 1 = Cruise Control Off
+            self.brake = 0  # 0 = Brake is not pressed, 1 = Brake is pressed
 
         def getSpeed(self):
             return self.speed
 
+        def getGearPosition(self):
+            if self.gearPosition == 0:
+                return 'P'
+            elif self.gearPosition == 1:
+                return 'R'
+            elif self.gearPosition == 2:
+                return 'N'
+            elif self.gearPosition == 3:
+                return 'D'
+
+        def getCruiseControl(self):
+            return self.cruiseControl
+
+        def getBrake(self):
+            return self.brake
+
         def decodeMessage(self, data):
-            """Decode CAN message from MCU. Message includes Speed"""
+            """Decode CAN message from MCU. Message includes Speed, gearPosition, cruiseControl"""
             try:
                 # speed
                 self.speed = data[0]
+
+                # gear position
+                self.gearPosition = data[1] & 11
+
+                # cruise control status
+                self.gearPosition = (data[1] >> 2) & 1
+
+                # brake status
+                self.brake = (data[1] >> 3) & 1
+
             except:
                 print(traceback.format_exc())
 
-    class Blinkers_Control():
+    class Lights_Control():
         def __init__(self):
             self.msgID = 0x004
-            self.rightBlinker = 0
-            self.leftBlinker = 0
-            self.hazardBlinker = 0
+            self.rightTurn = 0  # 0 = off, 1 = right turn on
+            self.leftTurn = 0  # 0 = off, 1 = left turn on
+            self.hazards = 0  # 0 = off, 1 = hazards on
+            self.headlights = 0  # 0 = off, 1 = lowbeams
+            self.warning = 0  # 0 = off, 1 = warning on
 
-        def getRightBlinker(self):
-            return self.rightBlinker
+        def getRightTurnIndicator(self):
+            return self.rightTurn
 
-        def getLeftBlinker(self):
-            return self.leftBlinker
+        def getLeftTurnIndicator(self):
+            return self.leftTurn
 
-        def getHazardBlinker(self):
-            return self.hazardBlinker
+        def getHazards(self):
+            return self.hazards
+
+        def getHeadlights(self):
+            return self.headlights
+
+        def getWarning(self):
+            return self.warning
 
         def decodeMessage(self, data):
             """Decode CAN message from blinker. Message includes status of hazards, right, and left blinker"""
             try:
                 # hazard
-                self.hazardBlinker = data[0]
+                self.hazards = data[0] & 0x1
 
-                # right
-                self.rightBlinker = data[1]
+                # right turn indicator
+                self.rightTurn = (data[0] >> 1) & 0x1
 
-                # left
-                self.leftBlinker = data[2]
+                # left turn indicator
+                self.leftTurn = (data[0] >> 2) & 0x1
 
+                # headlights
+                self.headlights = (data[0] >> 3) & 0x1
+
+                # warning
+                self.warning = (data[0] >> 4) & 0x1
             except:
                 print(traceback.format_exc())
 
