@@ -122,12 +122,12 @@ color:white;</string>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="leftArrow">
+      <widget class="QLabel" name="leftArrowIcon">
        <property name="styleSheet">
         <string notr="true">border-image: url(:/img/leftArrow);</string>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -143,12 +143,12 @@ font: 75 28pt &quot;MS Shell Dlg 2&quot;;</string>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="rightArrow">
+      <widget class="QLabel" name="rightArrowIcon">
        <property name="styleSheet">
         <string notr="true">border-image: url(:/img/rightArrow);</string>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -175,7 +175,7 @@ QPushButton:pressed {
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="warningLabel">
+   <widget class="QLabel" name="warningIcon">
     <property name="geometry">
      <rect>
       <x>620</x>
@@ -309,7 +309,7 @@ font: 16pt &quot;MS Shell Dlg 2&quot;;</string>
       <enum>QLayout::SetMinAndMaxSize</enum>
      </property>
      <item>
-      <widget class="QLabel" name="hazardsLabel">
+      <widget class="QLabel" name="hazardsIcon">
        <property name="styleSheet">
         <string notr="true">background-image: url(:/img/hazards);</string>
        </property>
@@ -319,7 +319,7 @@ font: 16pt &quot;MS Shell Dlg 2&quot;;</string>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="cruiseControlLabel">
+      <widget class="QLabel" name="cruiseControlIcon">
        <property name="styleSheet">
         <string notr="true">background-image: url(:/img/cruiseControl);</string>
        </property>
@@ -329,7 +329,7 @@ font: 16pt &quot;MS Shell Dlg 2&quot;;</string>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lowBeamsLogo">
+      <widget class="QLabel" name="headlightsIcon">
        <property name="styleSheet">
         <string notr="true">background-image: url(:/img/lowbeams);</string>
        </property>

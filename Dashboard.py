@@ -23,8 +23,13 @@ from PyQt5.QtCore import QThread, QTimer, pyqtSignal, pyqtSlot
 from Dashboard_ui import *
 from subprocess import call
 from collections import OrderedDict
-from CAN import *
 
+"""
+    Uncomment 'from CAN import *' and comment out 'from CAN_final import *' when testing with fake ECUs.
+    Comment our 'from CAN import *' and uncomment 'from CAN_final import *' when testing with real ECUs. 
+"""
+from CAN import *
+##from CAN_final import *
 
 class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -35,12 +40,13 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.CAN = CAN_Control()
         self.BMS = self.CAN.BMS
         self.MCU = self.CAN.MCU
-        self.Blinkers = self.CAN.Blinkers
+        self.Lights = self.CAN.Lights_Control
 
         # connect shutdown button
         self.shutdownButton.pressed.connect(self.shutdown)
-        
-        self.startTime = datetime.now()
+
+        dt = datetime.now()
+        self.startTime = dt.strftime('%d/%m/%Y_%H_%M')
         self.logFilePath = '//home//pi//Documents//Logs//{}.json'.format(self.startTime.__str__())
         self.logDict = OrderedDict()
 
@@ -65,22 +71,38 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.saveLogJsonTimer.timeout.connect(self.saveLogJson)
         self.saveLogJsonTimer.start(300000)
 
-        # update the GUI display every 250 ms
-        self.updateGUI_Thread = None
-        self.updateGUI_Timer = QTimer()
-        self.updateGUI_Timer.setSingleShot(False)
-        self.updateGUI_Timer.timeout.connect(self.updateGUI)
-        self.updateGUI_Timer.start(250)
+        # update texts/labels on GUI display every 200 ms
+        self.updateTextsGUI_Thread = None
+        self.updateTextsGUI_Timer = QTimer()
+        self.updateTextsGUI_Timer.setSingleShot(False)
+        self.updateTextsGUI_Timer.timeout.connect(self.updateTextsGUI)
+        self.updateTextsGUI_Timer.start(200)
 
-        # blinker threads
-        self.hazardBlinkThread = None
-        self.rightBlinkThread = None
-        self.leftBlinkThread = None
+        # update non-flashing images on GUI display every 500 ms
+        self.prevStateHazards = 0
+        self.prevStateWarning = 0
+        self.prevStateCruiseControl = 0
+        self.prevStateHeadlights = 0
+        self.warningChangedSignal = pyqtSignal()
+        self.hazardsChangedSignal = pyqtSignal()
+        self.cruiseControlChangedSignal = pyqtSignal()
+        self.headlightsChangedSignal = pyqtSignal()
+        self.warningChangedSignal.connect(self.warningChangedSignal)
+        self.hazardsChangedSignal.connect(self.hazardsChanged)
+        self.cruiseControlChangedSignal.connect(self.hazardsChanged)
+        self.headlightsChangedSignal.connect(self.headlightsChanged)
+        self.updateIconsGUI_Thread = None
+        self.updateIconsGUI_Timer = QTimer()
+        self.updateIconsGUI_Timer.setSingleShot(False)
+        self.updateIconsGUI_Timer.timeout.connect(self.updateIconsGUI)
+        self.updateIconsGUI_Timer.start(500)
 
-        self.rightFlag = False
+        # update flashing turn signals images on GUI display
+        self.updateTurnLightsGUI_Thread = None
+        self.updateTurnLightsGUI()
 
     def startReadThread(self):
-        """Thread for reading and deciphering incoming CAN messages"""
+        """Thread for reading and deciphering incoming CAN messages."""
         class ReadThread(QThread):
             def __init__(self):
                 QThread.__init__(self)
@@ -89,6 +111,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                 while True:
                     try:
                         ID, data = self.CAN.readMessage()
+                        # if there is a CAN message, pass it to the correct ECU to be decoded
                         if ID is not None and data is not None:
                             if ID == 0x001:
                                 self.BMS.decodeMessage1(data)
@@ -97,7 +120,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                             elif ID == 0x003:
                                 self.MCU.decodeMessage(data)
                             elif ID == 0x004:
-                                self.Blinkers.decodeMessage(data)
+                                self.Lights.decodeMessage(data)
                                     
                     except:
                         print(traceback.format_exc())
@@ -107,206 +130,224 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.readThread.CAN = self.CAN
             self.readThread.BMS = self.BMS
             self.readThread.MCU = self.MCU
-            self.readThread.Blinkers = self.Blinkers
+            self.readThread.Lights = self.Lights
             self.readThread.start()
         except:
             print(traceback.format_exc())
 
-    def updateGUI(self):
-        """Updates the GUI display every 250 ms"""
-        class UpdateGUI(QThread):
-            startBlinkRightSignal = pyqtSignal()
-            stopBlinkRightSignal =  pyqtSignal()
-            setRightFlagSignal = pyqtSignal()
-            removeRightFlagSignal = pyqtSignal()
+    def updateTextsGUI(self):
+        """Updates texts on GUI display every 250 ms.
+            Texts include state of charge, gear position, speed, miles range."""
+        class UpdateTextsGUI(QThread):
+
             def __init__(self):
                 QThread.__init__(self)
 
             def run(self):
                 try:
-                    ##### update signal variables #####
+                    ##### get new signal variables #####
                     # BMS
                     BMS = self.BMS
-                    voltage = BMS.getVoltage()
                     stateOfCharge = BMS.getSOC()
-                    avgBatteryTemperature = BMS.getAvgBatteryTemp()
 
                     # MCU
                     MCU = self.MCU
                     speed = MCU.getSpeed()
+                    gearPosition = MCU.getGearPosition()
 
-                    ###### update GUI display based on new signal variables #####
+                    ###### update texts/numbers on GUI display based on new signal variables #####
                     # BMS
                     self.chargePercentageBar.setValue(int(stateOfCharge))
                     self.milesText.setText(str(0))
-                    self.voltageText.setText(str(voltage))
-                    self.batteryTemperatureText.setText(str(avgBatteryTemperature))
 
                     # MCU
-                    self.speedometer.display(speed)
-
-                    """
-                    print(self.Blinkers.getRightBlinker())
-                    if (self.Blinkers.getRightBlinker() == 1):
-                        if self.rightFlag == False:
-                            self.setRightFlagSignal.emit()
-                            self.startBlinkRightSignal.emit()
-                    elif self.Blinkers.getRightBlinker() == 0:
-                        if self.rightFlag == True:
-                            self.removeRightFlagSignal.emit()
-                            self.stopBlinkRightSignal.emit()
-                    """
+                    self.speedometer.display(int(speed))
+                    self.gearPositionLabel.setText(str(gearPosition))
                 except:
                     print(traceback.format_exc())
-            
-                
+
         try:
-            self.updateGUI_Thread = UpdateGUI()
-            self.updateGUI_Thread.BMS = self.BMS
-            self.updateGUI_Thread.MCU = self.MCU
-            self.updateGUI_Thread.Blinkers = self.Blinkers
+            # ECUs to pass to the QThread
+            self.updateTextsGUI_Thread = UpdateTextsGUI()
+            self.updateTextsGUI_Thread.BMS = self.BMS
+            self.updateTextsGUI_Thread.MCU = self.MCU
 
-            # GUI widgets
-            self.updateGUI_Thread.chargePercentageBar = self.chargePercentageBar
-            self.updateGUI_Thread.milesText = self.milesText
-            self.updateGUI_Thread.voltageText = self.voltageText
-            self.updateGUI_Thread.batteryTemperatureText = self.batteryTemperatureText
-            self.updateGUI_Thread.speedometer = self.speedometer
+            # GUI widgets to pass to the QThread
+            self.updateTextsGUI_Thread.chargePercentageBar = self.chargePercentageBar
+            self.updateTextsGUI_Thread.milesText = self.milesText
+            self.updateTextsGUI_Thread.speedometer = self.speedometer
+            self.updateTextsGUI_Thread.gearPositionLabel = self.gearPositionLabel
 
-            self.updateGUI_Thread.setRightFlagSignal.connect(self.setRightFlag)
-            self.updateGUI_Thread.removeRightFlagSignal.connect(self.setRightFlag)
-            self.updateGUI_Thread.rightFlag = self.rightFlag
-            self.updateGUI_Thread.startBlinkRightSignal.connect(self.startBlinkRight)
-            self.updateGUI_Thread.stopBlinkRightSignal.connect(self.stopBlinkRight)
-            
-            self.updateGUI_Thread.start()
+            # run thread
+            self.updateTextsGUI_Thread.start()
         except:
             print(traceback.format_exc())
 
-    def setRightFlag(self):
-        self.rightFlag = True
+    def updateTurnLightsGUI(self):
+        """Updates turn indicators on the GUI display"""
+        class UpdateTurnLightsGUI(QThread):
+            def __init__(self):
+                QThread.__init__(self)
+            def run(self):
+                try:
+                    Lights = self.Lights
+                    while True:
+                        hazards = Lights.getHazards()
+                        # flash both turn signals if hazards are on.
+                        if hazards == 1:
+                            self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
+                            self.msleep(1)
+                            self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                            self.msleep(500)
+                            self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrow);")
+                            self.msleep(1)
+                            self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrow);")
+                            self.msleep(500)
 
-    def removeRightFlag(self):
-        self.rightFlag = False
+                        else:
+                            leftTurn = Lights.getLeftTurnIndicator()
+                            rightTurn = Lights.getRightTurnIndicator()
+                            # flash left signal if activated
+                            if leftTurn == 1 and rightTurn == 0:
+                                self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
+                                self.msleep(500)
+                                self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrow);")
+                                self.msleep(500)
+                            # flash right signal if activated.
+                            elif rightTurn == 1 and leftTurn == 0:
+                                self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                                self.msleep(500)
+                                self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrow);")
+                                self.msleep(500)
 
-    def startBlinkRight(self):
-        """Blink the right signal"""
-        class BlinkRight(QThread):
-            stopBlinkLeftSignal = pyqtSignal()
-            stopBlinkRightSignal = pyqtSignal()
+                except:
+                    print(traceback.format_exc())
+
+        try:
+            # ECUs to pass to the QThread
+            self.updateTurnLightsGUI_Thread = UpdateTurnLightsGUI()
+            self.updateTurnLightsGUI_Thread.Lights = self.Lights
+
+            # GUI widgets to pass to the QThread
+            self.updateTurnLightsGUI_Thread.hazardsIcon = self.hazardsIcon
+            self.updateTurnLightsGUI_Thread.leftArrowIcon = self.leftArrowIcon
+            self.updateTurnLightsGUI_Thread.rightArrowIcon = self.rightArrowIcon
+
+            # run thread
+            self.updateTurnLightsGUI_Thread.start()
+        except:
+            print(traceback.format_exc())
+
+    def updateIconsGUI(self):
+        """ Updates indicator icons on the GUI display. Icons include warning, hazard, headlights, cruise control. """
+        class UpdateIconsGUI(QThread):
+            # initialize signals
+            warningChangedSignal = pyqtSignal(int)
+            hazardsChangedSignal = pyqtSignal(int)
+            headlightsChangedSignal = pyqtSignal(int)
+            cruiseControlChangedSignal = pyqtSignal(int)
 
             def __init__(self):
                 QThread.__init__(self)
-
             def run(self):
-                while True:
-                    #self.stopBlinkLeftSignal.emit()
-                    # turn on right signal arrow
-                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrowOn);")
-                    self.msleep(500)
+                try:
+                    # new MCU signal variables
+                    MCU = self.MCU
+                    currStateCruiseControl = MCU.getCruiseControl()
 
-                    # turn off right signal arrow
-                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
-                    self.msleep(500)
+                    # new Lights signal variables
+                    Lights = self.Lights
+                    currStateHazards = Lights.getHazards
+                    currStateHeadlights = Lights.getHeadlights
+                    currStateWarning = Lights.getWarning
+
+                    # compare previous signal values with new signal values to see if GUI icon needs to change
+                    # if signal values are new, update GUI image and call slot functions
+                    if self.prevStateHazards != currStateHazards:
+                        if currStateHazards == 1:
+                            self.hazardsIcon.setStyleSheet("background-image: url(:/img/hazards);")
+                        else:
+                            self.hazardsIcon.setStyleSheet("")
+                        self.hazardsChangedSignal.emit(currStateHazards)
+
+                    if self.prevStateCruiseControl != currStateCruiseControl:
+                        if currStateCruiseControl == 1:
+                            self.cruiseControlIcon.setStyleSheet("background-image: url(:/img/cruiseControl);")
+                        else:
+                            self.cruiseControlIcon.setStyleSheet("")
+                        self.cruiseControlChangedSignal.emit(currStateCruiseControl)
+
+                    if self.prevStateHeadlights != currStateHeadlights:
+                        if currStateHeadlights == 1:
+                            self.headlightsIcon.setStyleSheet("background-image: url(:/img/lowbeams);")
+                        else:
+                            self.headlightsIcon.setStyleSheet("")
+                        self.headlightsChangedSignal.emit(currStateHeadlights)
+
+                    if self.prevStateWarning != currStateWarning:
+                        if currStateWarning == 1:
+                            self.warningIcon.setStyleSheet("background-image: url(:/img/warningYellow);")
+                        else:
+                            self.warningIcon.setStyleSheet("")
+                        self.warningChangedSignal.emit(currStateWarning)
+
+                except:
+                    print(traceback.format_exc())
 
         try:
-            global rightBlinkFlag
-            self.rightBlinkThread = BlinkRight()
-            self.rightBlinkThread.Blinkers = self.Blinkers
-            self.rightBlinkThread.rightArrow = self.rightArrow
-            self.rightBlinkThread.stopBlinkLeftSignal.connect(self.stopBlinkLeft)
-            self.rightBlinkThread.stopBlinkRightSignal.connect(self.stopBlinkRight)
-            self.rightBlinkThread.start()
+            # ECUs to pass to the QThread
+            self.updateIconsGUI_Thread = UpdateIconsGUI()
+            self.updateIconsGUI_Thread.MCU = self.MCU
+            self.updateIconsGUI_Thread.Lights = self.Lights
+
+            # GUI widgets to pass to the QThread
+            self.updateIconsGUI_Thread.warningIcon = self.warningIcon
+            self.updateIconsGUI_Thread.cruiseControlIcon = self.cruiseControlIcon
+            self.updateIconsGUI_Thread.hazardsIcon = self.hazardsIcon
+            self.updateIconsGUI_Thread.headlightsIcon = self.headlightsIcon
+
+            # previous state to pass to the QThread for comparison
+            self.updateIconsGUI_Thread.prevStateWarning = self.prevStateWarning
+            self.updateIconsGUI_Thread.prevStateHazards = self.prevStateHazards
+            self.updateIconsGUI_Thread.prevStateCruiseControl = self.prevStateCruiseControl
+            self.updateIconsGUI_Thread.prevStateHeadlights = self.prevStateHeadlights
+
+            # connect signals and slots to pass QThread
+            self.updateIconsGUI_Thread.warningChangedSignal.connect(self.warningChanged)
+            self.updateIconsGUI_Thread.hazardsChangedSignal.connect(self.hazardsChanged)
+            self.updateIconsGUI_Thread.headlightsChangedSignal.connect(self.headlightsChanged)
+            self.updateIconsGUI_Thread.cruiseControlChangedSignal.connect(self.cruiseControlChanged)
+
+            # run thread
+            self.updateIconsGUI_Thread.start()
         except:
             print(traceback.format_exc())
 
-    def stopBlinkRight(self):
-        """End the blinking of the right signal"""
+    def warningChanged(self, newValue):
+        """Update prevState of warning."""
         try:
-            print('exit')
-            self.rightBlinkThread.quit()
-            
-            self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
+            self.prevStateWarning = newValue
         except:
             print(traceback.format_exc())
 
-    def startBlinkLeft(self):
-        """Blink the left signal"""
-        class BlinkLeft(QThread):
-            stopBlinkLeftSignal = pyqtSignal()
-            stopBlinkRightSignal = pyqtSignal()
-
-            def __init__(self):
-                QThread.__init__(self)
-
-            def run(self):
-                self.stopBlinkRightSignal.emit()
-                while (self.Blinkers.getLeftBlinker() == 1):
-                    # turn on right signal arrow
-                    self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrowOn);")
-                    self.msleep(500)
-
-                    # turn off right signal arrow
-                    self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrow);")
-                    self.msleep(500)
-
-                self.stopBlinkLeftSignal.emit()
-
+    def hazardsChanged(self, newValue):
+        """Update prevState of hazards."""
         try:
-            self.leftBlinkThread = BlinkLeft()
-            self.leftBlinkThread.Blinkers = self.Blinkers
-            self.leftBlinkThread.leftArrow = self.leftArrow
-            self.leftBlinkThread.stopBlinkLeftSignl.connect(self.stopBlinkLeft)
-            self.leftBlinkThread.stopBlinkRightSignal.connect(self.stopBlinkRight)
-            self.leftBlinkThread.start()
+            self.prevStateHazards = newValue
         except:
             print(traceback.format_exc())
 
-    def stopBlinkLeft(self):
-        """End the blinking of the left signal"""
+    def headlightsChanged(self, newValue):
+        """Update prevState of headlights."""
         try:
-            if self.leftBlinkThread != None:
-                self.leftBlinkThread.quit()
-                self.leftBlinkThread = None
-            self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrow);")
+            self.prevStateHeadlights = newValue
         except:
             print(traceback.format_exc())
 
-    def startBlinkHazard(self):
-        """Blink the hazard signal"""
-        class BlinkHazard(QThread):
-            stopBlinkLeftSignal = pyqtSignal()
-            stopBlinkRightSignal = pyqtSignal()
-
-            def __init__(self):
-                QThread.__init__(self)
-
-            def run(self):
-                self.stopBlinkLeftSignal.emit()
-                self.stopBlinkRightSignal.emit()
-                while (self.Blinkers.getHazardBlinker() == 1):
-                    # turn on both left and right signal arrows
-                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrowOn);")
-                    self.leftArrow.setStyleSheet("border-image: url(:/img/leftArrowOn);")
-                    self.msleep(500)
-
-                    # turn off both left and right signal arrows
-                    self.rightArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
-                    self.leftArrow.setStyleSheet("border-image: url(:/img/rightArrow);")
-                    self.msleep(500)
-
-                self.stopBlinkLeftSignal.emit()
-                self.stopBlinkRightSignal.emit()
-                self.quit()
-
+    def cruiseControlChanged(self, newValue):
+        """ Update prevState of cruise control."""
         try:
-            self.hazardBlinkThread = BlinkHazard()
-            self.hazardBlinkThread.Blinkers = self.Blinkers
-            self.hazardBlinkThread.rightArrow = self.rightArrow
-            self.hazardBlinkThread.leftArrow = self.leftArrow
-            self.hazardBlinkThread.stopBlinkLeftSignl.connect(self.stopBlinkLeft)
-            self.hazardBlinkThread.stopBlinkRightSignal.connect(self.stopBlinkRight)
-            self.hazardBlinkThread.start()
+            self.prevStateCruiseControl = newValue
         except:
             print(traceback.format_exc())
 
@@ -365,7 +406,8 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         """End the log file by marking an ending time stamp"""
         try:
             with open(self.logFilePath, 'a') as f:
-                self.endTime = datetime.now()
+                dt = datetime.now()
+                self.endTime = dt.strftime('%d/%m/%Y_%H_%M')
                 header = '\nEnding time: {}'.format(self.endTime.__str__())
                 f.write(header)
                 f.close()
@@ -384,6 +426,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     BMS = self.BMS
                     MCU = self.MCU
                     logDict = self.logDict
+                    Lights = self.Lights
                     t = self.timestamp
                     logDict[t] = {}
                     logDict[t]['Voltage'] = '{} V'.format(BMS.getVoltage())
@@ -395,15 +438,22 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     logDict[t]['HighestBatteryTemperature'] = '{} F'.format(BMS.getHighestTemp())
                     logDict[t]['ThermistorID'] = BMS.getHighetTempThermistorID()
                     logDict[t]['Speed'] = '{} mph'.format(MCU.getSpeed())
+                    logDict[t]['GearPosition'] = MCU.getGearPosition()
+                    logDict[t]['CruiseControl'] = MCU.getCruiseControl()
+                    logDict[t]['LeftTurn'] = Lights.getLeftTurnIndicator()
+                    logDict[t]['RightTurn'] = Lights.getRightTurnIndicator()
+                    logDict[t]['Hazards'] = Lights.getHazards()
+                    logDict[t]['Headlights'] = Lights.getHeadlights()
                 except KeyError as err:
                     print(str(err))
                 except:
                     print(traceback.format_exc())
 
         try:
-            self.appendLogDictThread  = AppendLogDict()
+            self.appendLogDictThread = AppendLogDict()
             self.appendLogDictThread.BMS = self.BMS
             self.appendLogDictThread.MCU = self.MCU
+            self.appendLogDictThread.Lights = self.Lights
             self.appendLogDictThread.timestamp = datetime.now().__str__()
             self.appendLogDictThread.logDict = self.logDict
             self.appendLogDictThread.start()
