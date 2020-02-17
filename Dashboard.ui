@@ -188,7 +188,7 @@ QPushButton:pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-image: url(:/img/warningYellow);</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -314,7 +314,7 @@ font: 16pt &quot;MS Shell Dlg 2&quot;;</string>
      <item>
       <widget class="QLabel" name="hazardsIcon">
        <property name="styleSheet">
-        <string notr="true">background-image: url(:/img/hazards);</string>
+        <string notr="true"/>
        </property>
        <property name="text">
         <string/>
@@ -324,7 +324,7 @@ font: 16pt &quot;MS Shell Dlg 2&quot;;</string>
      <item>
       <widget class="QLabel" name="cruiseControlIcon">
        <property name="styleSheet">
-        <string notr="true">background-image: url(:/img/cruiseControl);</string>
+        <string notr="true"/>
        </property>
        <property name="text">
         <string/>
@@ -334,7 +334,7 @@ font: 16pt &quot;MS Shell Dlg 2&quot;;</string>
      <item>
       <widget class="QLabel" name="headlightsIcon">
        <property name="styleSheet">
-        <string notr="true">background-image: url(:/img/lowbeams);</string>
+        <string notr="true"/>
        </property>
        <property name="text">
         <string/>
