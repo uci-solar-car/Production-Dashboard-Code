@@ -195,6 +195,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                         hazards = Lights.getHazards()
                         # flash both turn signals if hazards are on.
                         if hazards == 1:
+                            self.msleep(1)
                             self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
                             self.msleep(1)
                             self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
