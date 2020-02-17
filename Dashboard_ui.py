@@ -67,6 +67,7 @@ class Ui_MainWindow(object):
         self.gearPositionLabel = QtWidgets.QLabel(self.horizontalLayoutWidget)
         self.gearPositionLabel.setStyleSheet("color: white;\n"
 "font: 75 28pt \"MS Shell Dlg 2\";")
+        self.gearPositionLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.gearPositionLabel.setObjectName("gearPositionLabel")
         self.horizontalLayout.addWidget(self.gearPositionLabel)
         self.rightArrowIcon = QtWidgets.QLabel(self.horizontalLayoutWidget)
@@ -184,7 +185,6 @@ class Ui_MainWindow(object):
         self.milesText.setText(_translate("MainWindow", "74"))
         self.milesUnitLabel.setText(_translate("MainWindow", "mi"))
         self.milesLabel.setText(_translate("MainWindow", "<html><head/><body><p>Miles range:</p></body></html>"))
-
 import resource_rc
 
 
