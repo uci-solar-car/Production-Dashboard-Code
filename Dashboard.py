@@ -28,8 +28,8 @@ from collections import OrderedDict
     Uncomment 'from CAN import *' and comment out 'from CAN_final import *' when testing with fake ECUs.
     Comment our 'from CAN import *' and uncomment 'from CAN_final import *' when testing with real ECUs. 
 """
-from CAN import *
-##from CAN_final import *
+##from CAN import *
+from CAN_final import *
 
 class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -40,13 +40,13 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.CAN = CAN_Control()
         self.BMS = self.CAN.BMS
         self.MCU = self.CAN.MCU
-        self.Lights = self.CAN.Lights_Control
+        self.Lights = self.CAN.Lights
 
         # connect shutdown button
         self.shutdownButton.pressed.connect(self.shutdown)
 
         dt = datetime.now()
-        self.startTime = dt.strftime('%d/%m/%Y_%H_%M')
+        self.startTime = dt.strftime('%d_%m_%Y_%H_%M')
         self.logFilePath = '//home//pi//Documents//Logs//{}.json'.format(self.startTime.__str__())
         self.logDict = OrderedDict()
 
@@ -83,14 +83,14 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.prevStateWarning = 0
         self.prevStateCruiseControl = 0
         self.prevStateHeadlights = 0
-        self.warningChangedSignal = pyqtSignal()
-        self.hazardsChangedSignal = pyqtSignal()
-        self.cruiseControlChangedSignal = pyqtSignal()
-        self.headlightsChangedSignal = pyqtSignal()
-        self.warningChangedSignal.connect(self.warningChangedSignal)
-        self.hazardsChangedSignal.connect(self.hazardsChanged)
-        self.cruiseControlChangedSignal.connect(self.hazardsChanged)
-        self.headlightsChangedSignal.connect(self.headlightsChanged)
+##        self.warningChangedSignal = pyqtSignal()
+##        self.hazardsChangedSignal = pyqtSignal()
+##        self.cruiseControlChangedSignal = pyqtSignal()
+##        self.headlightsChangedSignal = pyqtSignal()
+##        self.warningChangedSignal.connect(self.warningChanged)
+##        self.hazardsChangedSignal.connect(self.hazardsChanged)
+##        self.cruiseControlChangedSignal.connect(self.hazardsChanged)
+##        self.headlightsChangedSignal.connect(self.headlightsChanged)
         self.updateIconsGUI_Thread = None
         self.updateIconsGUI_Timer = QTimer()
         self.updateIconsGUI_Timer.setSingleShot(False)
@@ -257,9 +257,9 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
                     # new Lights signal variables
                     Lights = self.Lights
-                    currStateHazards = Lights.getHazards
-                    currStateHeadlights = Lights.getHeadlights
-                    currStateWarning = Lights.getWarning
+                    currStateHazards = Lights.getHazards()
+                    currStateHeadlights = Lights.getHeadlights()
+                    currStateWarning = Lights.getWarning()
 
                     # compare previous signal values with new signal values to see if GUI icon needs to change
                     # if signal values are new, update GUI image and call slot functions
@@ -407,7 +407,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         try:
             with open(self.logFilePath, 'a') as f:
                 dt = datetime.now()
-                self.endTime = dt.strftime('%d/%m/%Y_%H_%M')
+                self.endTime = dt.strftime('%d_%m_%Y_%H_%M')
                 header = '\nEnding time: {}'.format(self.endTime.__str__())
                 f.write(header)
                 f.close()
@@ -465,7 +465,7 @@ def main():
     try:
         app = QApplication(sys.argv)
         form = Dashboard()
-        form.show()
+        form.showFullScreen()
     except:
         print(traceback.format_exc())
     finally:

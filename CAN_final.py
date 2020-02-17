@@ -19,7 +19,7 @@ class CAN_Control():
         self.notifier = None
         self.BMS = self.BMS_Control()
         self.MCU = self.MCU_Control()
-        self.Blinkers = self.Blinkers_Control()
+        self.Lights = self.Lights_Control()
         self.initCAN()
 
     def initCAN(self):
