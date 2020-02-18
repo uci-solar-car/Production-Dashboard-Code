@@ -1,4 +1,9 @@
+#!/usr/bin/env python3
 # Changelog
+# 2/17/2020 Changelog
+# Updated dashboard indicators/icons
+# Edit icon switching and blinking 
+
 # 12/6/2019 Changlelog
 # Added call for left, right, and hazard blinkers
 
@@ -35,7 +40,8 @@ class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
-
+        self.resetGUIIcons()
+        
         # initialize CAN_Control, BMS, MCU 
         self.CAN = CAN_Control()
         self.BMS = self.CAN.BMS
@@ -281,38 +287,38 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     # if signal values are new, update GUI image and call slot functions
                     if self.prevStateHazards != currStateHazards:
                         if currStateHazards == 1:
-                            self.hazardsIcon.show()
-                            #self.hazardsIcon.setStyleSheet("background-image: url(:/img/hazards);")
+                            #self.hazardsIcon.show()
+                            self.hazardsIcon.setStyleSheet("background-image: url(:/img/hazards);")
                         else:
-                            self.hazardsIcon.hide()
-                            #self.hazardsIcon.setStyleSheet("")
+                            #self.hazardsIcon.hide()
+                            self.hazardsIcon.setStyleSheet("")
                         self.hazardsChangedSignal.emit(currStateHazards)
 
                     if self.prevStateCruiseControl != currStateCruiseControl:
                         if currStateCruiseControl == 1:
-                            self.cruiseControlIcon.show()
-                            #self.cruiseControlIcon.setStyleSheet("background-image: url(:/img/cruiseControl);")
+                            #self.cruiseControlIcon.show()
+                            self.cruiseControlIcon.setStyleSheet("background-image: url(:/img/cruiseControl);")
                         else:
-                            self.cruiseControlIcon.hide()
-                            #self.cruiseControlIcon.setStyleSheet("")
+                            #self.cruiseControlIcon.hide()
+                            self.cruiseControlIcon.setStyleSheet("")
                         self.cruiseControlChangedSignal.emit(currStateCruiseControl)
 
                     if self.prevStateHeadlights != currStateHeadlights:
                         if currStateHeadlights == 1:
-                            self.headlightsIcon.show()
-                            #self.headlightsIcon.setStyleSheet("background-image: url(:/img/lowbeams);")
+                            #self.headlightsIcon.show()
+                            self.headlightsIcon.setStyleSheet("background-image: url(:/img/lowbeams);")
                         else:
-                            self.headlightsIcon.hide()
-                            #self.headlightsIcon.setStyleSheet("")
+                            #self.headlightsIcon.hide()
+                            self.headlightsIcon.setStyleSheet("")
                         self.headlightsChangedSignal.emit(currStateHeadlights)
 
                     if self.prevStateWarning != currStateWarning:
                         if currStateWarning == 1:
-                            self.warningIcon.show()
-                            #self.warningIcon.setStyleSheet("background-image: url(:/img/warningYellow);")
+                            #self.warningIcon.show()
+                            self.warningIcon.setStyleSheet("background-image: url(:/img/warningYellow);")
                         else:
-                            self.warningIcon.hide()
-                            #self.warningIcon.setStyleSheet("")
+                            #self.warningIcon.hide()
+                            self.warningIcon.setStyleSheet("")
                         self.warningChangedSignal.emit(currStateWarning)
 
                 except:
@@ -379,10 +385,14 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         """ Set GUI icons to original states. """
         self.leftArrowStack.setCurrentIndex(0)
         self.rightArrowStack.setCurrentIndex(0)
-        self.hazardsIcon.hide()
-        self.cruiseControlIcon.hide()
-        self.headlightsIcon.hide()
-        self.warningIcon.hide()
+        #self.hazardsIcon.hide()
+        #self.cruiseControlIcon.hide()
+        #self.headlightsIcon.hide()
+        #self.warningIcon.hide()
+        self.hazardsIcon.setStyleSheet("")
+        self.cruiseControlIcon.setStyleSheet("")
+        self.headlightsIcon.setStyleSheet("")
+        self.warningIcon.setStyleSheet("")
 
     def shutdown(self):
         """Shutdown the rpi when shutdown button is pressed. Save the log prior to shut down"""
