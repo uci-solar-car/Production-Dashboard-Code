@@ -192,7 +192,7 @@ class CAN_Control():
                 self.gearPosition = data[1] & 11
 
                 # cruise control status
-                self.gearPosition = (data[1] >> 2) & 1
+                self.cruiseControl = (data[1] >> 2) & 1
 
                 # brake status
                 self.brake = (data[1] >> 3) & 1
