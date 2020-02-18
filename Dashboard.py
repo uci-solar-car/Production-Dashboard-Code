@@ -191,35 +191,50 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             def run(self):
                 try:
                     Lights = self.Lights
+                    leftArrowStack = self.leftArrowStack
+                    rightArrowStack = self.rightArrowStack
                     while True:
                         hazards = Lights.getHazards()
                         # flash both turn signals if hazards are on.
                         if hazards == 1:
-                            self.msleep(1)
-                            self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
-                            self.msleep(1)
-                            self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                            leftArrowStack.setCurrentIndex(1)
+                            rightArrowStack.setCurrentIndex(1)
                             self.msleep(500)
-                            self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrow);")
-                            self.msleep(1)
-                            self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrow);")
+                            leftArrowStack.setCurrentIndex(0)
+                            rightArrowStack.setCurrentIndex(0)
                             self.msleep(500)
+                            # self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
+                            # self.msleep(1)
+                            # self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                            # self.msleep(500)
+                            # self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrow);")
+                            # self.msleep(1)
+                            # self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrow);")
+                            # self.msleep(500)
 
                         else:
                             leftTurn = Lights.getLeftTurnIndicator()
                             rightTurn = Lights.getRightTurnIndicator()
                             # flash left signal if activated
                             if leftTurn == 1 and rightTurn == 0:
-                                self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
+                                leftArrowStack.setCurrentIndex(1)
                                 self.msleep(500)
-                                self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrow);")
+                                leftArrowStack.setCurrentIndex(0)
                                 self.msleep(500)
+                                # self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
+                                # self.msleep(500)
+                                # self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrow);")
+                                # self.msleep(500)
                             # flash right signal if activated.
                             elif rightTurn == 1 and leftTurn == 0:
-                                self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                                rightArrowStack.setCurrentIndex(1)
                                 self.msleep(500)
-                                self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrow);")
+                                rightArrowStack.setCurrentIndex(0)
                                 self.msleep(500)
+                                # self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                                # self.msleep(500)
+                                # self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrow);")
+                                # self.msleep(500)
 
                 except:
                     print(traceback.format_exc())
@@ -231,8 +246,8 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
             # GUI widgets to pass to the QThread
             self.updateTurnLightsGUI_Thread.hazardsIcon = self.hazardsIcon
-            self.updateTurnLightsGUI_Thread.leftArrowIcon = self.leftArrowIcon
-            self.updateTurnLightsGUI_Thread.rightArrowIcon = self.rightArrowIcon
+            self.updateTurnLightsGUI_Thread.leftArrowStack = self.leftArrowStack
+            self.updateTurnLightsGUI_Thread.rightArrowStack = self.rightArrowStack
 
             # run thread
             self.updateTurnLightsGUI_Thread.start()
@@ -266,30 +281,38 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     # if signal values are new, update GUI image and call slot functions
                     if self.prevStateHazards != currStateHazards:
                         if currStateHazards == 1:
-                            self.hazardsIcon.setStyleSheet("background-image: url(:/img/hazards);")
+                            self.hazardsIcon.show()
+                            #self.hazardsIcon.setStyleSheet("background-image: url(:/img/hazards);")
                         else:
-                            self.hazardsIcon.setStyleSheet("")
+                            self.hazardsIcon.hide()
+                            #self.hazardsIcon.setStyleSheet("")
                         self.hazardsChangedSignal.emit(currStateHazards)
 
                     if self.prevStateCruiseControl != currStateCruiseControl:
                         if currStateCruiseControl == 1:
-                            self.cruiseControlIcon.setStyleSheet("background-image: url(:/img/cruiseControl);")
+                            self.cruiseControlIcon.show()
+                            #self.cruiseControlIcon.setStyleSheet("background-image: url(:/img/cruiseControl);")
                         else:
-                            self.cruiseControlIcon.setStyleSheet("")
+                            self.cruiseControlIcon.hide()
+                            #self.cruiseControlIcon.setStyleSheet("")
                         self.cruiseControlChangedSignal.emit(currStateCruiseControl)
 
                     if self.prevStateHeadlights != currStateHeadlights:
                         if currStateHeadlights == 1:
-                            self.headlightsIcon.setStyleSheet("background-image: url(:/img/lowbeams);")
+                            self.headlightsIcon.show()
+                            #self.headlightsIcon.setStyleSheet("background-image: url(:/img/lowbeams);")
                         else:
-                            self.headlightsIcon.setStyleSheet("")
+                            self.headlightsIcon.hide()
+                            #self.headlightsIcon.setStyleSheet("")
                         self.headlightsChangedSignal.emit(currStateHeadlights)
 
                     if self.prevStateWarning != currStateWarning:
                         if currStateWarning == 1:
-                            self.warningIcon.setStyleSheet("background-image: url(:/img/warningYellow);")
+                            self.warningIcon.show()
+                            #self.warningIcon.setStyleSheet("background-image: url(:/img/warningYellow);")
                         else:
-                            self.warningIcon.setStyleSheet("")
+                            self.warningIcon.hide()
+                            #self.warningIcon.setStyleSheet("")
                         self.warningChangedSignal.emit(currStateWarning)
 
                 except:
@@ -351,6 +374,15 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.prevStateCruiseControl = newValue
         except:
             print(traceback.format_exc())
+
+    def resetGUIIcons(self):
+        """ Set GUI icons to original states. """
+        self.leftArrowStack.setCurrentIndex(0)
+        self.rightArrowStack.setCurrentIndex(0)
+        self.hazardsIcon.hide()
+        self.cruiseControlIcon.hide()
+        self.headlightsIcon.hide()
+        self.warningIcon.hide()
 
     def shutdown(self):
         """Shutdown the rpi when shutdown button is pressed. Save the log prior to shut down"""
