@@ -49,19 +49,17 @@ class Test(QMainWindow, Ui_MainWindow):
 
             def run(self):
                 while True:
-                    self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrowOn);")
-                    self.msleep(1)
-                    self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrowOn);")
+                    self.leftArrowStack.setCurrentIndex(1)
+                    self.rightArrowStack.setCurrentIndex(1)
                     self.msleep(500)
-                    self.leftArrowIcon.setStyleSheet("border-image: url(:/img/leftArrow);")
-                    self.msleep(1)
-                    self.rightArrowIcon.setStyleSheet("border-image: url(:/img/rightArrow);")
+                    self.leftArrowStack.setCurrentIndex(0)
+                    self.rightArrowStack.setCurrentIndex(0)
                     self.msleep(500)
 
         try:
             self.t = StartBlink()
-            self.t.leftArrowIcon = self.leftArrowIcon
-            self.t.rightArrowIcon = self.rightArrowIcon
+            self.t.leftArrowStack = self.leftArrowStack
+            self.t.rightArrowStack = self.rightArrowStack
             self.t.start()
 
         except:

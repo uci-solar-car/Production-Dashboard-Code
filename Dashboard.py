@@ -28,13 +28,7 @@ from PyQt5.QtCore import QThread, QTimer, pyqtSignal, pyqtSlot
 from Dashboard_ui import *
 from subprocess import call
 from collections import OrderedDict
-
-"""
-    Uncomment 'from CAN import *' and comment out 'from CAN_final import *' when testing with fake ECUs.
-    Comment our 'from CAN import *' and uncomment 'from CAN_final import *' when testing with real ECUs. 
-"""
-##from CAN import *
-from CAN_final import *
+from CAN import *
 
 class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
