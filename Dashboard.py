@@ -467,12 +467,12 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     t = self.timestamp
                     logDict[t] = {}
                     logDict[t]['Voltage'] = '{} V'.format(BMS.getVoltage())
-                    logDict[t]['AverageBatteryTemperature'] = '{} F'.format(BMS.getAvgBatteryTemp())
+                    logDict[t]['AverageBatteryTemperature'] = '{} C'.format(BMS.getAvgBatteryTemp())
                     logDict[t]['StateOfCharge'] = '{} %'.format(BMS.getSOC())
                     logDict[t]['MilesRange'] = '{} mi'.format(0)
                     logDict[t]['Current'] = '{} A'.format(BMS.getCurrent())
                     logDict[t]['AveragePackCurrent'] = '{} A'.format(BMS.getAvgPackCurrent())
-                    logDict[t]['HighestBatteryTemperature'] = '{} F'.format(BMS.getHighestTemp())
+                    logDict[t]['HighestBatteryTemperature'] = '{} C'.format(BMS.getHighestTemp())
                     logDict[t]['ThermistorID'] = BMS.getHighetTempThermistorID()
                     logDict[t]['Speed'] = '{} mph'.format(MCU.getSpeed())
                     logDict[t]['GearPosition'] = MCU.getGearPosition()
