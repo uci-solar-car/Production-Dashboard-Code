@@ -149,6 +149,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     # BMS
                     BMS = self.BMS
                     stateOfCharge = BMS.getSOC()
+                    milesRange = BMS.getMilesRange()
 
                     # MCU
                     MCU = self.MCU
@@ -158,7 +159,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     ###### update texts/numbers on GUI display based on new signal variables #####
                     # BMS
                     self.chargePercentageBar.setValue(int(stateOfCharge))
-                    self.milesText.setText(str(0))
+                    self.milesText.setText(str(milesRange))
 
                     # MCU
                     self.speedometer.display(int(speed))

@@ -1,3 +1,6 @@
+# 2/23/2020 Changelog
+# Added getMilesRange(), temporary calculation, need to implement later
+
 # 2/6/2020 Changelog
 # Turned Blinkers class into Lights_Control class
 
@@ -117,6 +120,10 @@ class CAN_Control():
 
         def getFanSpeed(self):
             return self.fanSpeed
+
+        def getMilesRange(self):
+            self.milesRange = self.stateOfCharge
+            return self.milesRange
 
         def decodeMessage1(self, data):
             """Decode CAN message from BMS with ID# 0x001. Message includes Failsafe Statuses, Inst. Pack Voltage,
