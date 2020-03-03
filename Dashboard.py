@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
+
 # Changelog
+# 3/2/2020 Changelog
+# Updated shutdown button. Now terminates GUI when pressed
+# Adding a shell file to execute program when at bootup
+
 # 2/17/2020 Changelog
 # Updated dashboard indicators/icons
 # Edit icon switching and blinking 
@@ -29,6 +34,8 @@ from Dashboard_ui import *
 from subprocess import call
 from collections import OrderedDict
 from CAN import *
+
+app = None
 
 class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -391,6 +398,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def shutdown(self):
         """Shutdown the rpi when shutdown button is pressed. Save the log prior to shut down"""
+        global app
         try:
             self.appendLogDictTimer.stop()
             self.saveLogJsonTimer.stop()
@@ -401,7 +409,8 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.endLogFile()
             self.readThread.exit()
 ##            call('sudo shutdown now', shell=True)
-            exit()
+            app.exit()
+            sys.exit()
         except:
             print(traceback.format_exc())
 
@@ -500,6 +509,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             print(traceback.format_exc())
 
 def main():
+    global app
     try:
         app = QApplication(sys.argv)
         form = Dashboard()
