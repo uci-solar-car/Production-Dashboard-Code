@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
 # Changelog
+
+# 9/5/2020 Changelog
+# Added first iteration of wireless communication. Initialized serial port as global variable
+#
+
 # 3/2/2020 Changelog
 # Updated shutdown button. Now terminates GUI when pressed
 # Adding a shell file to execute program when at bootup
@@ -25,6 +30,8 @@
 # Added initial widgets
 
 import json
+import struct
+import serial
 import sys
 import traceback
 from datetime import datetime
@@ -37,12 +44,16 @@ from CAN import *
 
 app = None
 
+# wireless communication port initialization
+#serialPort = serial.Serial(port="/dev/ttyUSB0", baudrate=9600)
+
+
 class Dashboard(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
         self.resetGUIIcons()
-        
+
         # initialize CAN_Control, BMS, MCU 
         self.CAN = CAN_Control()
         self.BMS = self.CAN.BMS
@@ -90,14 +101,14 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         self.prevStateWarning = 0
         self.prevStateCruiseControl = 0
         self.prevStateHeadlights = 0
-##        self.warningChangedSignal = pyqtSignal()
-##        self.hazardsChangedSignal = pyqtSignal()
-##        self.cruiseControlChangedSignal = pyqtSignal()
-##        self.headlightsChangedSignal = pyqtSignal()
-##        self.warningChangedSignal.connect(self.warningChanged)
-##        self.hazardsChangedSignal.connect(self.hazardsChanged)
-##        self.cruiseControlChangedSignal.connect(self.hazardsChanged)
-##        self.headlightsChangedSignal.connect(self.headlightsChanged)
+        ##        self.warningChangedSignal = pyqtSignal()
+        ##        self.hazardsChangedSignal = pyqtSignal()
+        ##        self.cruiseControlChangedSignal = pyqtSignal()
+        ##        self.headlightsChangedSignal = pyqtSignal()
+        ##        self.warningChangedSignal.connect(self.warningChanged)
+        ##        self.hazardsChangedSignal.connect(self.hazardsChanged)
+        ##        self.cruiseControlChangedSignal.connect(self.hazardsChanged)
+        ##        self.headlightsChangedSignal.connect(self.headlightsChanged)
         self.updateIconsGUI_Thread = None
         self.updateIconsGUI_Timer = QTimer()
         self.updateIconsGUI_Timer.setSingleShot(False)
@@ -110,6 +121,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def startReadThread(self):
         """Thread for reading and deciphering incoming CAN messages."""
+
         class ReadThread(QThread):
             def __init__(self):
                 QThread.__init__(self)
@@ -128,10 +140,10 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                                 self.MCU.decodeMessage(data)
                             elif ID == 0x004:
                                 self.Lights.decodeMessage(data)
-                                    
+
                     except:
                         print(traceback.format_exc())
-                        
+
         try:
             self.readThread = ReadThread()
             self.readThread.CAN = self.CAN
@@ -145,6 +157,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
     def updateTextsGUI(self):
         """Updates texts on GUI display every 250 ms.
             Texts include state of charge, gear position, speed, miles range."""
+
         class UpdateTextsGUI(QThread):
 
             def __init__(self):
@@ -193,9 +206,11 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def updateTurnLightsGUI(self):
         """Updates turn indicators on the GUI display"""
+
         class UpdateTurnLightsGUI(QThread):
             def __init__(self):
                 QThread.__init__(self)
+
             def run(self):
                 try:
                     Lights = self.Lights
@@ -264,6 +279,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def updateIconsGUI(self):
         """ Updates indicator icons on the GUI display. Icons include warning, hazard, headlights, cruise control. """
+
         class UpdateIconsGUI(QThread):
             # initialize signals
             warningChangedSignal = pyqtSignal(int)
@@ -273,6 +289,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
             def __init__(self):
                 QThread.__init__(self)
+
             def run(self):
                 try:
                     # new MCU signal variables
@@ -289,37 +306,37 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     # if signal values are new, update GUI image and call slot functions
                     if self.prevStateHazards != currStateHazards:
                         if currStateHazards == 1:
-                            #self.hazardsIcon.show()
+                            # self.hazardsIcon.show()
                             self.hazardsIcon.setStyleSheet("background-image: url(:/img/hazards);")
                         else:
-                            #self.hazardsIcon.hide()
+                            # self.hazardsIcon.hide()
                             self.hazardsIcon.setStyleSheet("")
                         self.hazardsChangedSignal.emit(currStateHazards)
 
                     if self.prevStateCruiseControl != currStateCruiseControl:
                         if currStateCruiseControl == 1:
-                            #self.cruiseControlIcon.show()
+                            # self.cruiseControlIcon.show()
                             self.cruiseControlIcon.setStyleSheet("background-image: url(:/img/cruiseControl);")
                         else:
-                            #self.cruiseControlIcon.hide()
+                            # self.cruiseControlIcon.hide()
                             self.cruiseControlIcon.setStyleSheet("")
                         self.cruiseControlChangedSignal.emit(currStateCruiseControl)
 
                     if self.prevStateHeadlights != currStateHeadlights:
                         if currStateHeadlights == 1:
-                            #self.headlightsIcon.show()
+                            # self.headlightsIcon.show()
                             self.headlightsIcon.setStyleSheet("background-image: url(:/img/lowbeams);")
                         else:
-                            #self.headlightsIcon.hide()
+                            # self.headlightsIcon.hide()
                             self.headlightsIcon.setStyleSheet("")
                         self.headlightsChangedSignal.emit(currStateHeadlights)
 
                     if self.prevStateWarning != currStateWarning:
                         if currStateWarning == 1:
-                            #self.warningIcon.show()
+                            # self.warningIcon.show()
                             self.warningIcon.setStyleSheet("background-image: url(:/img/warningYellow);")
                         else:
-                            #self.warningIcon.hide()
+                            # self.warningIcon.hide()
                             self.warningIcon.setStyleSheet("")
                         self.warningChangedSignal.emit(currStateWarning)
 
@@ -387,10 +404,10 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         """ Set GUI icons to original states. """
         self.leftArrowStack.setCurrentIndex(0)
         self.rightArrowStack.setCurrentIndex(0)
-        #self.hazardsIcon.hide()
-        #self.cruiseControlIcon.hide()
-        #self.headlightsIcon.hide()
-        #self.warningIcon.hide()
+        # self.hazardsIcon.hide()
+        # self.cruiseControlIcon.hide()
+        # self.headlightsIcon.hide()
+        # self.warningIcon.hide()
         self.hazardsIcon.setStyleSheet("")
         self.cruiseControlIcon.setStyleSheet("")
         self.headlightsIcon.setStyleSheet("")
@@ -408,7 +425,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
             self.saveLogJsonThread.wait()
             self.endLogFile()
             self.readThread.exit()
-##            call('sudo shutdown now', shell=True)
+            ##            call('sudo shutdown now', shell=True)
             app.exit()
             sys.exit()
         except:
@@ -426,9 +443,11 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def saveLogJson(self):
         """Convert the log dict into json and write into a json file. Clear the log dict after json file is updated"""
+
         class SaveLogJson(QThread):
             def __init__(self):
                 QThread.__init__(self)
+
             def run(self):
                 try:
                     with open(self.logFilePath, 'a') as f:
@@ -463,6 +482,8 @@ class Dashboard(QMainWindow, Ui_MainWindow):
 
     def appendLogDict(self):
         """Called every minute. Adds another entry to the logDict"""
+        """Will also send SQL message wireless-ly"""
+
         class AppendLogDict(QThread):
 
             def __init__(self):
@@ -491,6 +512,16 @@ class Dashboard(QMainWindow, Ui_MainWindow):
                     logDict[t]['RightTurn'] = Lights.getRightTurnIndicator()
                     logDict[t]['Hazards'] = Lights.getHazards()
                     logDict[t]['Headlights'] = Lights.getHeadlights()
+
+#                    sql_num_msg = (BMS.getVoltage(), BMS.getAvgBatteryTemp(), BMS.getSOC(), BMS.getCurrent(),
+#                                   BMS.getAvgPackCurrent(), BMS.getHighestTemp(), BMS.getHighestTempThermistorID(),
+#                                   MCU.getSpeed())
+#                    sql_str_msg = b''
+#                    for i in sql_num_msg:
+#                        sql_str_msg += struct.pack('!B', i)
+#                    if serialPort.isOpen() is False:
+#                        serialPort.open()
+
                 except KeyError as err:
                     print(str(err))
                 except:
@@ -508,6 +539,7 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         except:
             print(traceback.format_exc())
 
+
 def main():
     global app
     try:
@@ -518,6 +550,7 @@ def main():
         print(traceback.format_exc())
     finally:
         app.exec_()
+
 
 if __name__ == '__main__':
     main()
