@@ -55,14 +55,11 @@ class Test(QMainWindow, Ui_MainWindow):
         #sql_str_msg = b''
         #for i in sql_num_msg:
         #    sql_str_msg += struct.pack('!B', i)
-        message = "heyooo"
-        if serialPort.isOpen() is False:
-            serialPort.open()
-        serialPort.write(message.encode());
 
 
     def startBlink(self):
         class StartBlink(QThread):
+
             def __init__(self):
                 QThread.__init__(self)
 
@@ -74,6 +71,10 @@ class Test(QMainWindow, Ui_MainWindow):
                     self.leftArrowStack.setCurrentIndex(0)
                     self.rightArrowStack.setCurrentIndex(0)
                     self.msleep(500)
+                    message = "heyooo"
+                    if serialPort.isOpen() is False:
+                        serialPort.open()
+                    serialPort.write(message.encode());
 
         try:
             self.t = StartBlink()
