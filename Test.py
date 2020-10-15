@@ -1,9 +1,15 @@
+import struct
 import traceback
 import sys
+
+import serial
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtCore import QThread, QTimer, pyqtSignal, pyqtSlot
 from Dashboard_ui import *
 from time import sleep
+
+# wireless communication port initialization
+serialPort = serial.Serial(port="/dev/ttyUSB0", baudrate=9600)
 
 class Test(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -44,6 +50,15 @@ class Test(QMainWindow, Ui_MainWindow):
     def updateVal(self, newVal):
         self.counter = newVal
         print(self.counter)
+        sql_num_msg = (10, 10, 20, 20, 30, 30, 10, 10);
+        #(BMS.getVoltage(), BMS.getAvgBatteryTemp(), BMS.getSOC(), BMS.getCurrent(), BMS.getAvgPackCurrent(), BMS.getHighestTemp(), BMS.getHighestTempThermistorID(), MCU.getSpeed())
+        sql_str_msg = b''
+        for i in sql_num_msg:
+            sql_str_msg += struct.pack('!B', i)
+        if serialPort.isOpen() is False:
+            serialPort.open()
+        serialPort.write(sql_str_msg.encode());
+
 
     def startBlink(self):
         class StartBlink(QThread):
@@ -70,7 +85,7 @@ class Test(QMainWindow, Ui_MainWindow):
 
     def shutdown(self):
         """Shutdown the rpi when shutdown button is pressed. Save the log prior to shut down"""
-        global app
+
         try:
             ##            call('sudo shutdown now', shell=True)
             app.exit()
