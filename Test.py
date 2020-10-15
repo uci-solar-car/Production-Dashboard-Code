@@ -66,20 +66,20 @@ class Test(QMainWindow, Ui_MainWindow):
                     self.leftArrowStack.setCurrentIndex(0)
                     self.rightArrowStack.setCurrentIndex(0)
                     self.msleep(500)
-                sql_num_msg = (10, 10, 20, 20, 30, 30, 10, 10);
-                # (BMS.getVoltage(), BMS.getAvgBatteryTemp(), BMS.getSOC(), BMS.getCurrent(), BMS.getAvgPackCurrent(), BMS.getHighestTemp(), BMS.getHighestTempThermistorID(), MCU.getSpeed())
-                sql_str_msg = b''
-                for i in sql_num_msg:
-                   sql_str_msg += struct.pack('!B', i)
-                if serialPort.isOpen() is False:
-                    serialPort.open()
-                serialPort.write(sql_str_msg.encode());
 
         try:
             self.t = StartBlink()
             self.t.leftArrowStack = self.leftArrowStack
             self.t.rightArrowStack = self.rightArrowStack
             self.t.start()
+            sql_num_msg = (10, 10, 20, 20, 30, 30, 10, 10);
+            # (BMS.getVoltage(), BMS.getAvgBatteryTemp(), BMS.getSOC(), BMS.getCurrent(), BMS.getAvgPackCurrent(), BMS.getHighestTemp(), BMS.getHighestTempThermistorID(), MCU.getSpeed())
+            sql_str_msg = b''
+            for i in sql_num_msg:
+                sql_str_msg += struct.pack('!B', i)
+            if serialPort.isOpen() is False:
+                serialPort.open()
+            serialPort.write(sql_str_msg.encode());
 
         except:
             print(traceback.format_exc())
