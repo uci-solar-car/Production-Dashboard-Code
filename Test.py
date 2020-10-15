@@ -10,6 +10,9 @@ class Test(QMainWindow, Ui_MainWindow):
         super(self.__class__, self).__init__()
         self.setupUi(self)
 
+        # connect shutdown button
+        self.shutdownButton.pressed.connect(self.shutdown)
+
         # self.counter = 0
         # self.emitterTimer = QTimer()
         # self.emitterTimer.setSingleShot(False)
@@ -65,9 +68,20 @@ class Test(QMainWindow, Ui_MainWindow):
         except:
             print(traceback.format_exc())
 
+    def shutdown(self):
+        """Shutdown the rpi when shutdown button is pressed. Save the log prior to shut down"""
+        global app
+        try:
+            ##            call('sudo shutdown now', shell=True)
+            app.exit()
+            sys.exit()
+        except:
+            print(traceback.format_exc())
+
 
 
 def main():
+    global app
     try:
 
         app = QApplication(sys.argv)

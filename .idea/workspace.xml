@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2d576409-8762-4caa-b643-6e8ae37d200a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/SolarCarDashboard.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SolarCarDashboard.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="2d576409-8762-4caa-b643-6e8ae37d200a" name="Default Changelist" comment="added first wireless comm tests">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dashboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/Dashboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +37,7 @@
           <entry type="LOCAL">
             <value>
               <list>
-                <branch-info repo="$PROJECT_DIR$" source="ver2" />
+                <branch-info repo="$PROJECT_DIR$" source="wireless&amp;SQL" />
               </list>
             </value>
           </entry>
@@ -53,12 +51,6 @@
         </map>
       </branch-storage>
     </favorite-branches>
-    <option name="PUSH_TAGS">
-      <GitPushTagMode>
-        <option name="argument" value="--follow-tags" />
-        <option name="title" value="Current Branch" />
-      </GitPushTagMode>
-    </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="ver2" />
@@ -76,7 +68,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../SolarCarWirelessComm" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.Dashboard_ui">
+  <component name="RunManager" selected="Python.Test">
     <configuration type="PythonConfigurationType" factoryName="Python">
       <module name="SolarCarDashboard" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -95,7 +87,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Dashboard_ui" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="Test" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="SolarCarDashboard" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -107,7 +99,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Dashboard_ui.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -117,7 +109,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.Dashboard_ui" />
+      <item itemvalue="Python.Test" />
     </list>
   </component>
   <component name="SvnConfiguration">
@@ -131,6 +123,21 @@
       <option name="presentableId" value="Default" />
       <updated>1574763171369</updated>
     </task>
+    <task id="LOCAL-00001" summary="added first wireless comm tests">
+      <created>1601510897990</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1601510897990</updated>
+    </task>
+    <task id="LOCAL-00002" summary="added first wireless comm tests">
+      <created>1601510958090</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1601510958090</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -147,45 +154,50 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="LAST_COMMIT_MESSAGE" value="" />
+    <MESSAGE value="added first wireless comm tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="added first wireless comm tests" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="552" y="179" key="#Notifications" timestamp="1601510483795">
+    <state x="552" y="179" key="#Notifications" timestamp="1602724142858">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="552" y="179" key="#Notifications/0.0.1920.1040@0.0.1920.1040" timestamp="1601510483795" />
-    <state x="614" y="115" key="CommitChangelistDialog2" timestamp="1601510896479">
+    <state x="552" y="179" key="#Notifications/0.0.1920.1040@0.0.1920.1040" timestamp="1602724142858" />
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1602724604562">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="614" y="115" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1601510896479" />
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602724604562" />
+    <state x="614" y="115" key="CommitChangelistDialog2" timestamp="1601513872536">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="614" y="115" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1601513872536" />
     <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1599265159222">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="740" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1599265159222" />
-    <state width="949" height="105" key="GridCell.Tab.0.bottom" timestamp="1601510843832">
+    <state width="949" height="105" key="GridCell.Tab.0.bottom" timestamp="1602728545368">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="949" height="105" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1601510843832" />
-    <state width="949" height="105" key="GridCell.Tab.0.center" timestamp="1601510843832">
+    <state width="949" height="105" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1602728545368" />
+    <state width="949" height="105" key="GridCell.Tab.0.center" timestamp="1602728545367">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="949" height="105" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1601510843832" />
-    <state width="949" height="105" key="GridCell.Tab.0.left" timestamp="1601510843832">
+    <state width="949" height="105" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1602728545367" />
+    <state width="949" height="105" key="GridCell.Tab.0.left" timestamp="1602728545367">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="949" height="105" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1601510843832" />
-    <state width="949" height="105" key="GridCell.Tab.0.right" timestamp="1601510843832">
+    <state width="949" height="105" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1602728545367" />
+    <state width="949" height="105" key="GridCell.Tab.0.right" timestamp="1602728545368">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="949" height="105" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1601510843832" />
-    <state x="552" y="253" key="Vcs.Push.Dialog.v2" timestamp="1601510853781">
+    <state width="949" height="105" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1602728545368" />
+    <state x="552" y="253" key="Vcs.Push.Dialog.v2" timestamp="1602728658319">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="552" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1601510853781" />
-    <state x="656" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1598727005134">
+    <state x="552" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1602728658319" />
+    <state x="656" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1602723594668">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="656" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1598727005134" />
+    <state x="656" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602723594668" />
     <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1601510327784">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
