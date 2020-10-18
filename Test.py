@@ -74,7 +74,7 @@ class Test(QMainWindow, Ui_MainWindow):
             self.t.start()
             #sql_num_msg = (10, 10, 20, 20, 30, 30, 10, 10);
             # (BMS.getVoltage(), BMS.getAvgBatteryTemp(), BMS.getSOC(), BMS.getCurrent(), BMS.getAvgPackCurrent(), BMS.getHighestTemp(), BMS.getHighestTempThermistorID(), MCU.getSpeed())
-            sql_str_msg = "" + 72 + ", " + 129 + ", " + 66 + ", " + 20 + ", " + 21 + ", " + 23
+            sql_str_msg = "" + str(72) + ", " + str(129) + ", " + str(66) + ", " + str(20) + ", " + str(21) + ", " + str(23)
             if serialPort.isOpen() is False:
                 serialPort.open()
             serialPort.write(sql_str_msg.encode());
