@@ -67,7 +67,7 @@ class Test(QMainWindow, Ui_MainWindow):
                     self.rightArrowStack.setCurrentIndex(0)
                     self.msleep(500)
                     sql_str_msg = "" + str(72) + ", " + str(129) + ", " + str(66) + ", " + str(20) + ", " + str(
-                        21) + ", " + str(23)
+                        21)
                     if serialPort.isOpen() is False:
                         serialPort.open()
                     serialPort.write(sql_str_msg.encode());
