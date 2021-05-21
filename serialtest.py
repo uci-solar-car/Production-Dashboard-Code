@@ -4,6 +4,8 @@ import serial
 from random import seed
 from random import random
 import time
+
+from SerialThread import SerialThread
 #from xbee import XBee
 
 serial_port = serial.Serial(port="/dev/ttyUSB0",
@@ -98,7 +100,11 @@ def testMsgValidation():
         receiveMessages()
     
 
-testMsgValidation()
+#testMsgValidation()
 
 #xbee.halt()
-#serial_port.close()
+#serial_port.close()      
+        
+st = SerialThread()
+
+st.start()

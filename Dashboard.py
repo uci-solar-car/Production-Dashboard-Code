@@ -41,6 +41,7 @@ from Dashboard_ui import *
 from subprocess import call
 from collections import OrderedDict
 from CAN import *
+from SerialThread import SerialThread
 
 app = None
 
@@ -118,6 +119,11 @@ class Dashboard(QMainWindow, Ui_MainWindow):
         # update flashing turn signals images on GUI display
         self.updateTurnLightsGUI_Thread = None
         self.updateTurnLightsGUI()
+        
+        # start serialthread
+        self.serialThread = SerialThread()
+        self.serialThread.start()
+        
 
     def startReadThread(self):
         """Thread for reading and deciphering incoming CAN messages."""
