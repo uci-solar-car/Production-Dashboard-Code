@@ -59,6 +59,12 @@ class SerialThread (threading.Thread):
                 print("Invalid Checksum: " + receivedMsgs[0])
             
             receivedMsgs.pop(0)
+
+    def resendMessages(self):
+    	for msg in self.msg_log:
+    		self.serial_port.write(self.msg_log[msg].encode())
+    		write("msg " + str(msg) + " resent: " + self.msg_log[msg])
+    			
             
     def generateRandomNumberMsg(self, msg_id, n):
         msg = str(msg_id) + ";"    
