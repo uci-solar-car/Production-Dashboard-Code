@@ -61,10 +61,12 @@ class SerialThread (threading.Thread):
             receivedMsgs.pop(0)
 
     def resendMessages(self):
+    	if self.msg_log:
+    		print("resending messages")
     	for msg in self.msg_log:
     		self.serial_port.write(self.msg_log[msg].encode())
     		write("msg " + str(msg) + " resent: " + self.msg_log[msg])
-    			
+
             
     def generateRandomNumberMsg(self, msg_id, n):
         msg = str(msg_id) + ";"    
@@ -90,6 +92,7 @@ class SerialThread (threading.Thread):
             time.sleep(5)
             
             self.receiveMessages()
+            self.resendMessages()
    
     def run(self):
         if(self.serial_port.isOpen() is False):
